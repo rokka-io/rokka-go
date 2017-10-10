@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/rokka-io/rokka-go/cli"
-	"github.com/rokka-io/rokka-go/client"
+	"github.com/rokka-io/rokka-go/rokka"
 )
 
 var apiKey string
@@ -42,7 +42,7 @@ func main() {
 		cfg.APIKey = apiKey
 	}
 
-	cl := client.NewClient(&client.Config{
+	cl := rokka.NewClient(&rokka.Config{
 		APIKey: cfg.APIKey,
 	})
 

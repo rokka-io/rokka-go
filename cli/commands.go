@@ -5,17 +5,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rokka-io/rokka-go/client"
+	"github.com/rokka-io/rokka-go/rokka"
 )
 
 type Command struct {
 	args        []string
 	description string
-	fn          func(*client.Client)
+	fn          func(*rokka.Client)
 }
 
 var commands = []Command{
-	Command{[]string{"stackoptions", "list"}, "Show default stack options", func(c *client.Client) {
+	Command{[]string{"stackoptions", "list"}, "Show default stack options", func(c *rokka.Client) {
 		res, err := c.GetStackoptions()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting stack options: %s", err)
@@ -29,7 +29,7 @@ func GetCommands() []Command {
 	return commands
 }
 
-func ExecCommand(c *client.Client, args []string) {
+func ExecCommand(c *rokka.Client, args []string) {
 	for _, v := range commands {
 		// TODO: improve this hacky line
 		if strings.Join(v.args, " ") == strings.Join(args, " ") {
