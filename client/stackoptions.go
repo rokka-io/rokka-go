@@ -23,4 +23,4 @@ func (c *Client) GetStackoptions() (StackoptionsResponse, error) {
 	
 	err = c.Call(req, &result)
 	return result, err
-} 
+}
