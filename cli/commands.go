@@ -37,4 +37,9 @@ func ExecCommand(c *rokka.Client, args []string) {
 			return
 		}
 	}
+	fmt.Println("Action not found")
+	fmt.Println("Available actions:")
+	for _, c := range commands {
+		fmt.Printf("\t%s - %s\n", strings.Join(c.args, " "), c.description)
+	}
 }
