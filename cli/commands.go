@@ -8,9 +8,15 @@ import (
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
+type UnknownCommandError string
+
+func (e UnknownCommandError) Error() string {
+	return string(e)
+}
+
 type Command struct {
-	args        []string
-	description string
+	Args        []string
+	Description string
 	fn          func(*rokka.Client)
 }
 
@@ -29,17 +35,16 @@ func GetCommands() []Command {
 	return commands
 }
 
-func ExecCommand(c *rokka.Client, args []string) {
+func ExecCommand(c *rokka.Client, args []string) error {
+	command := strings.Join(args, " ")
+
 	for _, v := range commands {
 		// TODO: improve this hacky line
-		if strings.Join(v.args, " ") == strings.Join(args, " ") {
+		if strings.Join(v.Args, " ") == command {
 			v.fn(c)
-			return
+			return nil
 		}
 	}
-	fmt.Println("Action not found")
-	fmt.Println("Available actions:")
-	for _, c := range commands {
-		fmt.Printf("\t%s - %s\n", strings.Join(c.args, " "), c.description)
-	}
+
+	return UnknownCommandError("Unknown command \"" + command + "\"")
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/rokka-io/rokka-go/cli"
 	"github.com/rokka-io/rokka-go/rokka"
@@ -16,8 +17,9 @@ func init() {
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command>\n\n", os.Args[0])
-		fmt.Fprint(os.Stderr, "Actions:\n")
-		fmt.Fprint(os.Stderr, "Options:\n")
+		fmt.Fprint(os.Stderr, "Commands:\n")
+		printCommands(os.Stderr)
+		fmt.Fprint(os.Stderr, "\nOptions:\n")
 		flag.PrintDefaults()
 	}
 }
@@ -34,7 +36,7 @@ func main() {
 
 	cfg, err := cli.GetConfig()
 	if err != nil {
-		fmt.Printf("Error reading configuration file: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Error reading configuration file: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -46,5 +48,26 @@ func main() {
 		APIKey: cfg.APIKey,
 	})
 
-	cli.ExecCommand(cl, args)
+	err = cli.ExecCommand(cl, args)
+
+	if err == nil {
+		os.Exit(0)
+	}
+
+	switch err.(type) {
+	case cli.UnknownCommandError:
+		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
+		fmt.Fprint(os.Stderr, "Commands:\n")
+		printCommands(os.Stderr)
+		os.Exit(1)
+	default:
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func printCommands(f *os.File) {
+	for _, c := range cli.GetCommands() {
+		fmt.Fprintf(f, "  %s\t%s\n", strings.Join(c.Args, " "), c.Description)
+	}
 }
