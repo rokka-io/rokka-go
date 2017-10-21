@@ -59,11 +59,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
 		fmt.Fprint(os.Stderr, "Commands:\n")
 		printCommands(os.Stderr)
-		os.Exit(1)
 	default:
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
 	}
+
+	os.Exit(1)
 }
 
 func printCommands(f *os.File) {

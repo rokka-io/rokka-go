@@ -16,7 +16,7 @@ type StackoptionsResponse struct {
 func (c *Client) GetStackoptions() (StackoptionsResponse, error) {
 	result := StackoptionsResponse{}
 
-	req, err := c.NewRequest("GET", "/stackoptions", nil)
+	req, err := c.NewRequest("GET", "/stackoptions", nil, nil)
 	if err != nil {
 		return result, err
 	}

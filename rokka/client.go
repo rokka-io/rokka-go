@@ -75,6 +75,16 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 	return decoder.Decode(&v)
 }
 
-func (c *Client) NewRequest(method, path string, body io.Reader) (*http.Request, error) {
-	return http.NewRequest(method, c.config.APIAddress+path, body)
+func (c *Client) NewRequest(method, path string, body io.Reader, query map[string]string) (*http.Request, error) {
+	req, err := http.NewRequest(method, c.config.APIAddress+path, body)
+
+	if query != nil {
+		q := req.URL.Query()
+		for k, v := range query {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	return req, err
 }
