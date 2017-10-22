@@ -54,11 +54,14 @@ func main() {
 		os.Exit(0)
 	}
 
-	switch err.(type) {
+	switch err := err.(type) {
 	case cli.UnknownCommandError:
 		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
 		fmt.Fprint(os.Stderr, "Commands:\n")
 		printCommands(os.Stderr)
+	case rokka.StatusCodeError:
+		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
+		fmt.Fprintf(os.Stderr, "%s\n", cli.PrettyJSON(err.Body))
 	default:
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
@@ -67,7 +70,7 @@ func main() {
 }
 
 func printCommands(f *os.File) {
-	for _, c := range cli.GetCommands() {
+	for _, c := range cli.Commands {
 		fmt.Fprintf(f, "  %s\t%s\n", strings.Join(c.Args, " "), c.Description)
 	}
 }

@@ -2,10 +2,10 @@ package rokka
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 type Client struct {
@@ -17,6 +17,15 @@ type Config struct {
 	APIVersion string
 	APIKey     string
 	HTTPClient *http.Client
+}
+
+type StatusCodeError struct {
+	StatusCode int
+	Body       []byte
+}
+
+func (e StatusCodeError) Error() string {
+	return fmt.Sprintf("rokka: Status Code %d", e.StatusCode)
 }
 
 func DefaultConfig() *Config {
@@ -67,7 +76,15 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return errors.New("Status code " + strconv.Itoa(resp.StatusCode))
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			body = []byte(fmt.Sprintf("Unable to read response body: %s", err))
+		}
+
+		return StatusCodeError{
+			resp.StatusCode,
+			body,
+		}
 	}
 
 	decoder := json.NewDecoder(resp.Body)
