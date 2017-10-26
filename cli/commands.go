@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -22,29 +23,24 @@ func (e UnknownCommandError) Error() string {
 
 type Command struct {
 	Args        []string
+	Options     []string
 	Description string
 	fn          func(*rokka.Client, map[string]string, map[string]string) error
 }
 
+func (c *Command) TakesOption(key string) bool {
+	for _, v := range c.Options {
+		if v == key {
+			return true
+		}
+	}
+
+	return false
+}
+
 var Commands = []Command{
-	Command{[]string{"stackoptions", "list"}, "Show default stack options", func(c *rokka.Client, _ map[string]string, _ map[string]string) error {
-		res, err := c.GetStackoptions()
-		if err != nil {
-			return err
-		}
-		fmt.Println(PrettyJSON(res))
-
-		return nil
-	}},
-	Command{[]string{"organizations", "get", "<name>"}, "Get details of an organization", func(c *rokka.Client, args map[string]string, _ map[string]string) error {
-		res, err := c.GetOrganization(args["name"])
-		if err != nil {
-			return err
-		}
-		fmt.Println(PrettyJSON(res))
-
-		return nil
-	}},
+	Command{[]string{"stackoptions", "list"}, nil, "Show default stack options", getStackoptions},
+	Command{[]string{"organizations", "get", "<name>"}, nil, "Get details of an organization", getOrganization},
 }
 
 func ExecCommand(cl *rokka.Client, userArgs []string) error {
@@ -61,10 +57,10 @@ func ExecCommand(cl *rokka.Client, userArgs []string) error {
 
 		for i, arg := range c.Args {
 			// check whether this is a positional argument ("<arg>")
-			positionalMatch := positionalArgsRegexp.FindString(arg)
+			positionalMatch := positionalArgsRegexp.FindStringSubmatch(arg)
 
-			if positionalMatch != "" {
-				positionalArgs[positionalMatch] = userArgs[i]
+			if len(positionalMatch) == 2 {
+				positionalArgs[positionalMatch[1]] = userArgs[i]
 			} else if arg != userArgs[i] {
 				// user provided argument doesn't match
 				break
@@ -77,13 +73,17 @@ func ExecCommand(cl *rokka.Client, userArgs []string) error {
 		}
 
 		if hasMatch {
-			options := map[string]string{}
+			options := make(map[string]string)
 
 			// parse rest into options ("key=value")
 			if len(userArgs) > commandArgsCount {
 				for _, option := range userArgs[commandArgsCount-1:] {
 					split := strings.Split(option, "=")
 					if len(split) == 2 && split[0] != "" && split[1] != "" {
+						if !c.TakesOption(split[0]) {
+							return errors.New(fmt.Sprintf(`Unsupported option "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " ")))
+						}
+
 						options[split[0]] = split[1]
 					}
 				}

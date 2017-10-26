@@ -11,9 +11,11 @@ import (
 )
 
 var apiKey string
+var apiAddress string
 
 func init() {
-	flag.StringVar(&apiKey, "apiKey", "", "Optional API Key")
+	flag.StringVar(&apiKey, "apiKey", "", "Optional API key")
+	flag.StringVar(&apiAddress, "apiAddress", "", "Optional API address")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command>\n\n", os.Args[0])
@@ -44,8 +46,13 @@ func main() {
 		cfg.APIKey = apiKey
 	}
 
+	if len(apiAddress) != 0 {
+		cfg.APIAddress = apiAddress
+	}
+
 	cl := rokka.NewClient(&rokka.Config{
-		APIKey: cfg.APIKey,
+		APIKey:     cfg.APIKey,
+		APIAddress: cfg.APIAddress,
 	})
 
 	err = cli.ExecCommand(cl, args)
@@ -71,6 +78,10 @@ func main() {
 
 func printCommands(f *os.File) {
 	for _, c := range cli.Commands {
-		fmt.Fprintf(f, "  %s\t%s\n", strings.Join(c.Args, " "), c.Description)
+		options := ""
+		if len(c.Options) != 0 {
+			options = fmt.Sprintf("\t (Options: %s)", strings.Join(c.Options, ", "))
+		}
+		fmt.Fprintf(f, "  %s\t%s%s\n", strings.Join(c.Args, " "), c.Description, options)
 	}
 }
