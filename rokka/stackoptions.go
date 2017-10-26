@@ -1,16 +1,14 @@
 package rokka
 
-type Property struct {
-	Type      string      `json:"type"`
-	MinLength *int        `json:"minLength,omitempty"`
-	Values    []string    `json:"values,omitempty"`
-	Default   interface{} `json:"default,omitempty"`
-	Minimum   *int        `json:"minimum,omitempty"`
-	Maximum   *int        `json:"maximum,omitempty"`
-}
-
 type StackoptionsResponse struct {
-	Properties map[string]Property `json:"properties"`
+	Properties map[string]struct {
+		Type      string      `json:"type"`
+		MinLength *int        `json:"minLength,omitempty"`
+		Values    []string    `json:"values,omitempty"`
+		Default   interface{} `json:"default,omitempty"`
+		Minimum   *int        `json:"minimum,omitempty"`
+		Maximum   *int        `json:"maximum,omitempty"`
+	} `json:"properties"`
 }
 
 func (c *Client) GetStackoptions() (StackoptionsResponse, error) {

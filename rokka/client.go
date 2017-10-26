@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -21,7 +20,14 @@ type Config struct {
 
 type StatusCodeError struct {
 	StatusCode int
-	Body       []byte
+	Body       ErrorResponse
+}
+
+type ErrorResponse struct {
+	Error struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error"`
 }
 
 func (e StatusCodeError) Error() string {
@@ -75,21 +81,22 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			body = []byte(fmt.Sprintf("Unable to read response body: %s", err))
-		}
-
-		return StatusCodeError{
-			resp.StatusCode,
-			body,
-		}
-	}
-
 	decoder := json.NewDecoder(resp.Body)
 
-	return decoder.Decode(&v)
+	if resp.StatusCode < 400 {
+		return decoder.Decode(&v)
+	}
+
+	errorBody := ErrorResponse{}
+	err = decoder.Decode(&errorBody)
+	if err != nil {
+		return err
+	}
+
+	return StatusCodeError{
+		resp.StatusCode,
+		errorBody,
+	}
 }
 
 func (c *Client) NewRequest(method, path string, body io.Reader, query map[string]string) (*http.Request, error) {
