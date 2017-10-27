@@ -2,14 +2,15 @@ package cli
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"os/user"
-	"path"	
-	"io/ioutil"
+	"path"
 )
 
 type Config struct {
-	APIKey string `json:"apiKey"`
+	APIKey       string `json:"apiKey"`
+	APIAddress   string `json:"apiAddress"`
 	Organization string `json:"organization"`
 }
 
