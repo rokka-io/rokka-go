@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -81,7 +80,7 @@ func ExecCommand(cl *rokka.Client, userArgs []string) error {
 					split := strings.Split(option, "=")
 					if len(split) == 2 && split[0] != "" && split[1] != "" {
 						if !c.TakesOption(split[0]) {
-							return errors.New(fmt.Sprintf(`Unsupported option "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " ")))
+							return fmt.Errorf(`Unsupported option "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " "))
 						}
 
 						options[split[0]] = split[1]
