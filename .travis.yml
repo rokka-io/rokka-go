@@ -1,0 +1,22 @@
+---
+language: go
+go:
+  - 1.6
+  - 1.7
+  - 1.8
+  - 1.9
+
+before_install:
+  - go get -u golang.org/x/tools/cmd/goimports
+  - go get github.com/mattn/goveralls
+  - go get github.com/go-playground/overalls
+
+script:
+  # linting
+  - goimports -d ./
+  - go tool vet ./
+  # testing
+  - go test -v ./...
+  # coveralls.io (see https://github.com/golang/go/issues/6909 why the use of overalls)
+  - overalls -project=github.com/rokka-io/rokka-go -covermode=count
+  - goveralls -coverprofile=overalls.coverprofile -service=travis-ci

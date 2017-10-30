@@ -1,10 +1,10 @@
 package test
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"io/ioutil"
 )
 
 func NewMockAPI(file string, statusCode int) *httptest.Server {
@@ -13,9 +13,9 @@ func NewMockAPI(file string, statusCode int) *httptest.Server {
 		if err != nil {
 			log.Fatal(err)
 		}
+		w.WriteHeader(statusCode)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
-		w.WriteHeader(statusCode)
 	}))
 
 	return ts
