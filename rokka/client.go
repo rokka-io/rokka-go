@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
-	"os"
 )
 
 type Client struct {
 	config Config
+}
+
+// HTTPRequester is an interface defining the Do function.
+// http.Client is automatically implementing that interface.
+type HTTPRequester interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
 type Config struct {
@@ -18,7 +22,7 @@ type Config struct {
 	APIVersion string
 	APIKey     string
 	Verbose    bool
-	HTTPClient *http.Client
+	HTTPClient HTTPRequester
 }
 
 type StatusCodeError struct {
@@ -53,6 +57,10 @@ func NewClient(config *Config) (c *Client) {
 		config.APIAddress = defConfig.APIAddress
 	}
 
+	if len(config.APIVersion) == 0 {
+		config.APIVersion = defConfig.APIVersion
+	}
+
 	if len(config.APIKey) == 0 {
 		config.APIKey = defConfig.APIKey
 	}
@@ -78,29 +86,11 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 		req.Header.Add("Content-Type", "application/json")
 	}
 
-	if c.config.Verbose {
-		dump, err := httputil.DumpRequest(req, true)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to dump request: %s\n", err)
-		} else {
-			fmt.Fprintf(os.Stderr, "%s\n", dump)
-		}
-	}
-
 	resp, err := c.config.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-
-	if c.config.Verbose {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to dump request: %s\n", err)
-		} else {
-			fmt.Fprintf(os.Stderr, "%s\n", dump)
-		}
-	}
 
 	decoder := json.NewDecoder(resp.Body)
 
