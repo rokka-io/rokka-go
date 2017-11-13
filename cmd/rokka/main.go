@@ -12,10 +12,12 @@ import (
 
 var apiKey string
 var apiAddress string
+var verbose bool
 
 func init() {
 	flag.StringVar(&apiKey, "apiKey", "", "Optional API key")
 	flag.StringVar(&apiAddress, "apiAddress", "", "Optional API address")
+	flag.BoolVar(&verbose, "verbose", false, "Verbose (output request/response)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command>\n\n", os.Args[0])
@@ -53,6 +55,7 @@ func main() {
 	cl := rokka.NewClient(&rokka.Config{
 		APIKey:     cfg.APIKey,
 		APIAddress: cfg.APIAddress,
+		Verbose:    verbose,
 	})
 
 	err = cli.ExecCommand(cl, args)

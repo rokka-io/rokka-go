@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
+	"os"
 )
 
 type Client struct {
@@ -15,6 +17,7 @@ type Config struct {
 	APIAddress string
 	APIVersion string
 	APIKey     string
+	Verbose    bool
 	HTTPClient *http.Client
 }
 
@@ -75,11 +78,29 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 		req.Header.Add("Content-Type", "application/json")
 	}
 
+	if c.config.Verbose {
+		dump, err := httputil.DumpRequest(req, true)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to dump request: %s\n", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "%s\n", dump)
+		}
+	}
+
 	resp, err := c.config.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
+	if c.config.Verbose {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to dump request: %s\n", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "%s\n", dump)
+		}
+	}
 
 	decoder := json.NewDecoder(resp.Body)
 
