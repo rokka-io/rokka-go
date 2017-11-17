@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -27,14 +28,7 @@ type Config struct {
 
 type StatusCodeError struct {
 	StatusCode int
-	Body       ErrorResponse
-}
-
-type ErrorResponse struct {
-	Error struct {
-		Code    int    `json:"code"`
-		Message string `json:"message"`
-	} `json:"error"`
+	Body       []byte
 }
 
 func (e StatusCodeError) Error() string {
@@ -98,8 +92,7 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 		return decoder.Decode(&v)
 	}
 
-	errorBody := ErrorResponse{}
-	err = decoder.Decode(&errorBody)
+	errorBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

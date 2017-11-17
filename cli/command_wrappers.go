@@ -1,35 +1,40 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
-func getStackOptions(c *rokka.Client, logger *Log, _ map[string]string, _ map[string]string) error {
-	res, err := c.GetStackOptions()
-	if err != nil {
-		return err
+func setDefaultValue(data map[string]string, key, val string) {
+	if _, ok := data[key]; !ok {
+		data[key] = val
 	}
-	s, err := PrettyJSON(res)
-	if err != nil {
-		return fmt.Errorf("cli/getStackOptions: Error pretty printing JSON: %s", err)
-	}
-	logger.Printf("%s", s)
-
-	return nil
 }
 
-func getOrganization(c *rokka.Client, logger *Log, args map[string]string, _ map[string]string) error {
+func getStackOptions(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+	res, err := c.GetStackOptions()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func getOrganization(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	res, err := c.GetOrganization(args["name"])
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s, err := PrettyJSON(res)
-	if err != nil {
-		return fmt.Errorf("cli/getOrganization: Error pretty printing JSON: %s", err)
-	}
-	logger.Printf("%s", s)
 
-	return nil
+	return res, nil
+}
+
+func listSourceImages(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+	setDefaultValue(options, "limit", "20")
+
+	res, err := c.ListSourceImages(args["org"], options)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

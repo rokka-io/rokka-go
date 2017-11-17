@@ -1,34 +1,24 @@
 package cli
 
 import (
-	"fmt"
-	"regexp"
-	"strings"
-
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
-var positionalArgsRegexp *regexp.Regexp
-
-func init() {
-	positionalArgsRegexp = regexp.MustCompile("^<(.*)>$")
-}
-
-type UnknownCommandError string
-
-func (e UnknownCommandError) Error() string {
-	return string(e)
-}
-
 type Command struct {
 	Args        []string
-	Options     []string
+	QueryParams []string
 	Description string
-	fn          func(*rokka.Client, *Log, map[string]string, map[string]string) error
+	fn          func(*rokka.Client, map[string]string, map[string]string) (interface{}, error)
+	template    string
 }
 
-func (c *Command) TakesOption(key string) bool {
-	for _, v := range c.Options {
+type CommandOptions struct {
+	Raw      bool
+	Template string
+}
+
+func (c *Command) TakesQueryParam(key string) bool {
+	for _, v := range c.QueryParams {
 		if v == key {
 			return true
 		}
@@ -37,60 +27,31 @@ func (c *Command) TakesOption(key string) bool {
 	return false
 }
 
-var Commands = []Command{
-	{[]string{"stackoptions", "list"}, nil, "Show default stack options", getStackOptions},
-	{[]string{"organizations", "get", "<name>"}, nil, "Get details of an organization", getOrganization},
+const rawTemplate = "{{json .}}"
+
+var getStackOptionsCommand = Command{
+	Args:        []string{"stackoptions", "list"},
+	Description: "Show default stack options",
+	fn:          getStackOptions,
+	template:    rawTemplate,
+}
+var getOrganizationCommand = Command{
+	Args:        []string{"organizations", "get", "<name>"},
+	Description: "Get details of an organization",
+	fn:          getOrganization,
+	template:    "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}",
 }
 
-func ExecCommand(cl *rokka.Client, logger *Log, userArgs []string) error {
-	hasMatch := false
+var listStackOptionsCommand = Command{
+	Args:        []string{"sourceimages", "list", "<org>"},
+	QueryParams: []string{"limit", "offset"},
+	Description: "List source images",
+	fn:          listSourceImages,
+	template:    "Name\tHash\tDetails\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.Format}}, {{.Width}}x{{.Height}}\n{{end}}\nTotal: {{.Total}}",
+}
 
-	for _, c := range Commands {
-		commandArgsCount := len(c.Args)
-
-		if len(userArgs) < commandArgsCount {
-			continue
-		}
-
-		positionalArgs := make(map[string]string)
-
-		for i, arg := range c.Args {
-			// check whether this is a positional argument ("<arg>")
-			positionalMatch := positionalArgsRegexp.FindStringSubmatch(arg)
-
-			if len(positionalMatch) == 2 {
-				positionalArgs[positionalMatch[1]] = userArgs[i]
-			} else if arg != userArgs[i] {
-				// user provided argument doesn't match
-				break
-			}
-
-			// we reached the end
-			if commandArgsCount == i+1 {
-				hasMatch = true
-			}
-		}
-
-		if hasMatch {
-			options := make(map[string]string)
-
-			// parse rest into options ("key=value")
-			if len(userArgs) > commandArgsCount {
-				for _, option := range userArgs[commandArgsCount-1:] {
-					split := strings.Split(option, "=")
-					if len(split) == 2 && split[0] != "" && split[1] != "" {
-						if !c.TakesOption(split[0]) {
-							return fmt.Errorf(`cli: unsupported option "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " "))
-						}
-
-						options[split[0]] = split[1]
-					}
-				}
-			}
-
-			return c.fn(cl, logger, positionalArgs, options)
-		}
-	}
-
-	return UnknownCommandError(fmt.Sprintf(`cli: Unknown command "%s"`, strings.Join(userArgs, " ")))
+var Commands = []Command{
+	getStackOptionsCommand,
+	getOrganizationCommand,
+	listStackOptionsCommand,
 }

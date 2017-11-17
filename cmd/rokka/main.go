@@ -12,20 +12,24 @@ import (
 
 var apiKey string
 var apiAddress string
+var raw bool
 var verbose bool
+var template string
 var logger cli.Log
 
 func init() {
 	logger = cli.Log{}
 
-	flag.StringVar(&apiKey, "apiKey", "", "Optional API key")
-	flag.StringVar(&apiAddress, "apiAddress", "", "Optional API address")
-	flag.BoolVar(&verbose, "verbose", false, "Show verbose HTTP request/responses")
+	flag.StringVar(&apiKey, "apiKey", "", "API key")
+	flag.StringVar(&apiAddress, "apiAddress", "", "API address")
+	flag.BoolVar(&raw, "raw", false, "Show raw HTTP response")
+	flag.BoolVar(&verbose, "verbose", false, "Enable verbose mode")
+	flag.StringVar(&template, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
 
 	flag.Usage = func() {
 		logger.Errorf("Usage: %s <command>\n\n", os.Args[0])
 		logger.Errorf("Commands:\n%s\n", getCommandUsages())
-		logger.Errorf("%s", "\nOptions:\n")
+		logger.Errorf("%s", "Options:\n")
 		flag.PrintDefaults()
 	}
 }
@@ -64,7 +68,12 @@ func main() {
 		HTTPClient: hc,
 	})
 
-	err = cli.ExecCommand(cl, &logger, args)
+	co := cli.CommandOptions{
+		Raw:      raw,
+		Template: template,
+	}
+
+	err = cli.ExecCommand(cl, &co, args)
 
 	if err == nil {
 		os.Exit(0)
@@ -81,7 +90,7 @@ func main() {
 		if pErr != nil {
 			logger.Errorf("Error pretty printing JSON: %s", pErr)
 		}
-		logger.Printf("%s", s)
+		logger.Printf("%s\n", s)
 	default:
 		logger.Errorf("Error: %v\n", err)
 	}
@@ -93,8 +102,8 @@ func getCommandUsages() string {
 	var s string
 	for _, c := range cli.Commands {
 		options := ""
-		if len(c.Options) != 0 {
-			options = fmt.Sprintf("\t (Options: %s)", strings.Join(c.Options, ", "))
+		if len(c.QueryParams) != 0 {
+			options = fmt.Sprintf("\t (Query Parameters: %s)", strings.Join(c.QueryParams, ", "))
 		}
 		s = s + fmt.Sprintf("  %s\t%s%s\n", strings.Join(c.Args, " "), c.Description, options)
 	}
