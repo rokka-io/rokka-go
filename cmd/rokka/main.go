@@ -13,6 +13,7 @@ import (
 var apiKey string
 var apiAddress string
 var verbose bool
+var template string
 var logger cli.Log
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 	flag.StringVar(&apiKey, "apiKey", "", "Optional API key")
 	flag.StringVar(&apiAddress, "apiAddress", "", "Optional API address")
 	flag.BoolVar(&verbose, "verbose", false, "Show verbose HTTP request/responses")
+	flag.StringVar(&template, "template", "", "Optional template to be applied to responses (See: https://golang.org/pkg/text/template/)")
 
 	flag.Usage = func() {
 		logger.Errorf("Usage: %s <command>\n\n", os.Args[0])
@@ -64,7 +66,11 @@ func main() {
 		HTTPClient: hc,
 	})
 
-	err = cli.ExecCommand(cl, &logger, args)
+	co := cli.CommandOptions{
+		Template: template,
+	}
+
+	err = cli.ExecCommand(cl, &logger, &co, args)
 
 	if err == nil {
 		os.Exit(0)
@@ -93,8 +99,8 @@ func getCommandUsages() string {
 	var s string
 	for _, c := range cli.Commands {
 		options := ""
-		if len(c.Options) != 0 {
-			options = fmt.Sprintf("\t (Options: %s)", strings.Join(c.Options, ", "))
+		if len(c.QueryParams) != 0 {
+			options = fmt.Sprintf("\t (Query Parameters: %s)", strings.Join(c.QueryParams, ", "))
 		}
 		s = s + fmt.Sprintf("  %s\t%s%s\n", strings.Join(c.Args, " "), c.Description, options)
 	}
