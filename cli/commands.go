@@ -18,10 +18,6 @@ type CommandOptions struct {
 }
 
 func (c *Command) TakesQueryParam(key string) bool {
-	if key == "template" {
-		return true
-	}
-
 	for _, v := range c.QueryParams {
 		if v == key {
 			return true

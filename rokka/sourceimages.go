@@ -19,6 +19,15 @@ type ListSourceImagesResponse struct {
 		Link         string                 `json:"link"`
 		UserMetadata map[string]interface{} `json:"user_metadata"`
 	} `json:"items"`
+	Cursor string `json:"cursor"`
+	Links  struct {
+		Prev *struct {
+			Href string `json:"href,omitempty"`
+		} `json:"prev,omitempty"`
+		Next *struct {
+			Href string `json:"href,omitempty"`
+		} `json:"next,omitempty"`
+	} `json:"links,omitempty"`
 }
 
 func (c *Client) ListSourceImages(org string, query map[string]string) (ListSourceImagesResponse, error) {

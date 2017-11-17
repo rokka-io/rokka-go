@@ -73,7 +73,7 @@ func main() {
 		Template: template,
 	}
 
-	err = cli.ExecCommand(cl, &logger, &co, args)
+	err = cli.ExecCommand(cl, &co, args)
 
 	if err == nil {
 		os.Exit(0)
@@ -90,7 +90,7 @@ func main() {
 		if pErr != nil {
 			logger.Errorf("Error pretty printing JSON: %s", pErr)
 		}
-		logger.Printf("%s", s)
+		logger.Printf("%s\n", s)
 	default:
 		logger.Errorf("Error: %v\n", err)
 	}

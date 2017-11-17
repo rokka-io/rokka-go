@@ -25,7 +25,7 @@ func (e UnknownCommandError) Error() string {
 
 var funcMap = template.FuncMap{"json": PrettyJSON}
 
-func ExecCommand(cl *rokka.Client, logger *Log, options *CommandOptions, userArgs []string) error {
+func ExecCommand(cl *rokka.Client, options *CommandOptions, userArgs []string) error {
 	hasMatch := false
 
 	for _, c := range Commands {
@@ -92,7 +92,7 @@ func ExecCommand(cl *rokka.Client, logger *Log, options *CommandOptions, userArg
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
 			err = t.Execute(w, res)
 			if err != nil {
-				return fmt.Errorf("cli/getOrganization: Error formatting response: %s", err)
+				return fmt.Errorf("cli: Error formatting response: %s", err)
 			}
 			w.Flush()
 

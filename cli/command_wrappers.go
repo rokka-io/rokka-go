@@ -10,14 +10,6 @@ func setDefaultValue(data map[string]string, key, val string) {
 	}
 }
 
-func extractTemplate(data map[string]string, defaultTemplate string) string {
-	setDefaultValue(data, "template", defaultTemplate)
-	tmpl := data["template"]
-	delete(data, "template")
-
-	return tmpl
-}
-
 func getStackOptions(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	res, err := c.GetStackOptions()
 	if err != nil {
