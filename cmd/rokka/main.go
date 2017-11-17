@@ -10,12 +10,19 @@ import (
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
-var apiKey string
-var apiAddress string
-var raw bool
-var verbose bool
-var template string
-var logger cli.Log
+var (
+	// auto-set during build of CLI
+	cliVersion string = "unversioned"
+
+	apiKey     string
+	apiAddress string
+	raw        bool
+	verbose    bool
+	template   string
+	version    bool
+
+	logger cli.Log
+)
 
 func init() {
 	logger = cli.Log{}
@@ -25,6 +32,7 @@ func init() {
 	flag.BoolVar(&raw, "raw", false, "Show raw HTTP response")
 	flag.BoolVar(&verbose, "verbose", false, "Enable verbose mode")
 	flag.StringVar(&template, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
+	flag.BoolVar(&version, "version", false, "Print current version")
 
 	flag.Usage = func() {
 		logger.Errorf("Usage: %s <command>\n\n", os.Args[0])
@@ -36,6 +44,11 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if version {
+		logger.Printf("Version: %s\n", cliVersion)
+		os.Exit(0)
+	}
 
 	args := flag.Args()
 
