@@ -12,6 +12,7 @@ import (
 
 var apiKey string
 var apiAddress string
+var raw bool
 var verbose bool
 var template string
 var logger cli.Log
@@ -19,15 +20,16 @@ var logger cli.Log
 func init() {
 	logger = cli.Log{}
 
-	flag.StringVar(&apiKey, "apiKey", "", "Optional API key")
-	flag.StringVar(&apiAddress, "apiAddress", "", "Optional API address")
-	flag.BoolVar(&verbose, "verbose", false, "Show verbose HTTP request/responses")
-	flag.StringVar(&template, "template", "", "Optional template to be applied to responses (See: https://golang.org/pkg/text/template/)")
+	flag.StringVar(&apiKey, "apiKey", "", "API key")
+	flag.StringVar(&apiAddress, "apiAddress", "", "API address")
+	flag.BoolVar(&raw, "raw", false, "Show raw HTTP response")
+	flag.BoolVar(&verbose, "verbose", false, "Enable verbose mode")
+	flag.StringVar(&template, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
 
 	flag.Usage = func() {
 		logger.Errorf("Usage: %s <command>\n\n", os.Args[0])
 		logger.Errorf("Commands:\n%s\n", getCommandUsages())
-		logger.Errorf("%s", "\nOptions:\n")
+		logger.Errorf("%s", "Options:\n")
 		flag.PrintDefaults()
 	}
 }
@@ -67,6 +69,7 @@ func main() {
 	})
 
 	co := cli.CommandOptions{
+		Raw:      raw,
 		Template: template,
 	}
 

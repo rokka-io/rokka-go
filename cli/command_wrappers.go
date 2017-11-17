@@ -1,11 +1,6 @@
 package cli
 
 import (
-	"fmt"
-	"os"
-	"text/tabwriter"
-	"text/template"
-
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
@@ -23,49 +18,31 @@ func extractTemplate(data map[string]string, defaultTemplate string) string {
 	return tmpl
 }
 
-func getStackOptions(c *rokka.Client, logger *Log, _ map[string]string, _ map[string]string, tmpl *template.Template) error {
+func getStackOptions(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	res, err := c.GetStackOptions()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s, err := PrettyJSON(res)
-	if err != nil {
-		return fmt.Errorf("cli/getStackOptions: Error pretty printing JSON: %s", err)
-	}
-	logger.Printf("%s", s)
 
-	return nil
+	return res, nil
 }
 
-func getOrganization(c *rokka.Client, logger *Log, args map[string]string, _ map[string]string, tmpl *template.Template) error {
+func getOrganization(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	res, err := c.GetOrganization(args["name"])
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s, err := PrettyJSON(res)
-	if err != nil {
-		return fmt.Errorf("cli/getOrganization: Error pretty printing JSON: %s", err)
-	}
-	logger.Printf("%s", s)
 
-	return nil
+	return res, nil
 }
 
-func listSourceImages(c *rokka.Client, logger *Log, args map[string]string, options map[string]string, tmpl *template.Template) error {
+func listSourceImages(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	setDefaultValue(options, "limit", "20")
 
 	res, err := c.ListSourceImages(args["org"], options)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
-	err = tmpl.Execute(w, res)
-	if err != nil {
-		return fmt.Errorf("cli/getOrganization: Error formatting response: %s", err)
-	}
-
-	w.Flush()
-
-	return nil
+	return res, nil
 }

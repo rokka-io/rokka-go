@@ -2,8 +2,10 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
+	"text/tabwriter"
 	"text/template"
 
 	"github.com/rokka-io/rokka-go/rokka"
@@ -20,6 +22,8 @@ type UnknownCommandError string
 func (e UnknownCommandError) Error() string {
 	return string(e)
 }
+
+var funcMap = template.FuncMap{"json": PrettyJSON}
 
 func ExecCommand(cl *rokka.Client, logger *Log, options *CommandOptions, userArgs []string) error {
 	hasMatch := false
@@ -71,13 +75,28 @@ func ExecCommand(cl *rokka.Client, logger *Log, options *CommandOptions, userArg
 			if len(options.Template) != 0 {
 				tmpl = options.Template
 			}
+			if options.Raw {
+				tmpl = rawTemplate
+			}
 
-			t, err := template.New("").Parse(tmpl)
+			res, err := c.fn(cl, positionalArgs, queryParams)
+			if err != nil {
+				return err
+			}
+
+			t, err := template.New("").Funcs(funcMap).Parse(tmpl + "\n")
 			if err != nil {
 				return fmt.Errorf("cli: Error parsing response template: %s", err)
 			}
 
-			return c.fn(cl, logger, positionalArgs, queryParams, t)
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+			err = t.Execute(w, res)
+			if err != nil {
+				return fmt.Errorf("cli/getOrganization: Error formatting response: %s", err)
+			}
+			w.Flush()
+
+			return nil
 		}
 	}
 
