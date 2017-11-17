@@ -11,11 +11,18 @@ type Client struct {
 	config Config
 }
 
+// HTTPRequester is an interface defining the Do function.
+// http.Client is automatically implementing that interface.
+type HTTPRequester interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type Config struct {
 	APIAddress string
 	APIVersion string
 	APIKey     string
-	HTTPClient *http.Client
+	Verbose    bool
+	HTTPClient HTTPRequester
 }
 
 type StatusCodeError struct {
@@ -48,6 +55,10 @@ func NewClient(config *Config) (c *Client) {
 
 	if len(config.APIAddress) == 0 {
 		config.APIAddress = defConfig.APIAddress
+	}
+
+	if len(config.APIVersion) == 0 {
+		config.APIVersion = defConfig.APIVersion
 	}
 
 	if len(config.APIKey) == 0 {

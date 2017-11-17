@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 )
 
-func PrettyJSON(data interface{}) string {
+func PrettyJSON(data interface{}) (string, error) {
 	var s []byte
 	var err error
 
@@ -21,9 +20,8 @@ func PrettyJSON(data interface{}) string {
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error marshalling JSON: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cli/prettyJSON: %s", err)
 	}
 
-	return string(s)
+	return string(s), nil
 }

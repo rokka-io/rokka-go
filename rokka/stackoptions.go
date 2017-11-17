@@ -1,6 +1,6 @@
 package rokka
 
-type StackoptionsResponse struct {
+type StackOptionsResponse struct {
 	Properties map[string]struct {
 		Type      string      `json:"type"`
 		MinLength *int        `json:"minLength,omitempty"`
@@ -11,8 +11,8 @@ type StackoptionsResponse struct {
 	} `json:"properties"`
 }
 
-func (c *Client) GetStackoptions() (StackoptionsResponse, error) {
-	result := StackoptionsResponse{}
+func (c *Client) GetStackOptions() (StackOptionsResponse, error) {
+	result := StackOptionsResponse{}
 
 	req, err := c.NewRequest("GET", "/stackoptions", nil, nil)
 	if err != nil {

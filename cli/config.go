@@ -26,13 +26,13 @@ func GetConfig() (Config, error) {
 		return config, err
 	}
 
-	path := getPath(usr)
+	p := getPath(usr)
 
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if _, err := os.Stat(p); os.IsNotExist(err) {
 		return config, nil
 	}
 
-	content, err := ioutil.ReadFile(path)
+	content, err := ioutil.ReadFile(p)
 	if err != nil {
 		return config, err
 	}

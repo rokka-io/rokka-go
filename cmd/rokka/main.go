@@ -12,16 +12,20 @@ import (
 
 var apiKey string
 var apiAddress string
+var verbose bool
+var logger cli.Log
 
 func init() {
+	logger = cli.Log{}
+
 	flag.StringVar(&apiKey, "apiKey", "", "Optional API key")
 	flag.StringVar(&apiAddress, "apiAddress", "", "Optional API address")
+	flag.BoolVar(&verbose, "verbose", false, "Show verbose HTTP request/responses")
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s <command>\n\n", os.Args[0])
-		fmt.Fprint(os.Stderr, "Commands:\n")
-		printCommands(os.Stderr)
-		fmt.Fprint(os.Stderr, "\nOptions:\n")
+		logger.Errorf("Usage: %s <command>\n\n", os.Args[0])
+		logger.Errorf("Commands:\n%s\n", getCommandUsages())
+		logger.Errorf("%s", "\nOptions:\n")
 		flag.PrintDefaults()
 	}
 }
@@ -50,12 +54,17 @@ func main() {
 		cfg.APIAddress = apiAddress
 	}
 
+	logger.Verbose = verbose
+
+	hc := NewHTTPClient(&logger)
+
 	cl := rokka.NewClient(&rokka.Config{
 		APIKey:     cfg.APIKey,
 		APIAddress: cfg.APIAddress,
+		HTTPClient: hc,
 	})
 
-	err = cli.ExecCommand(cl, args)
+	err = cli.ExecCommand(cl, &logger, args)
 
 	if err == nil {
 		os.Exit(0)
@@ -63,25 +72,32 @@ func main() {
 
 	switch err := err.(type) {
 	case cli.UnknownCommandError:
-		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
-		fmt.Fprint(os.Stderr, "Commands:\n")
-		printCommands(os.Stderr)
+		logger.Errorf("Error: %v\n\n", err)
+		flag.Usage()
 	case rokka.StatusCodeError:
-		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
-		fmt.Fprintf(os.Stderr, "%s\n", cli.PrettyJSON(err.Body))
+		logger.Errorf("Error: %v\n\n", err)
+
+		s, pErr := cli.PrettyJSON(err.Body)
+		if pErr != nil {
+			logger.Errorf("Error pretty printing JSON: %s", pErr)
+		}
+		logger.Printf("%s", s)
 	default:
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		logger.Errorf("Error: %v\n", err)
 	}
 
 	os.Exit(1)
 }
 
-func printCommands(f *os.File) {
+func getCommandUsages() string {
+	var s string
 	for _, c := range cli.Commands {
 		options := ""
 		if len(c.Options) != 0 {
 			options = fmt.Sprintf("\t (Options: %s)", strings.Join(c.Options, ", "))
 		}
-		fmt.Fprintf(f, "  %s\t%s%s\n", strings.Join(c.Args, " "), c.Description, options)
+		s = s + fmt.Sprintf("  %s\t%s%s\n", strings.Join(c.Args, " "), c.Description, options)
 	}
+
+	return s
 }

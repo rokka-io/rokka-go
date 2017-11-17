@@ -24,7 +24,7 @@ type Command struct {
 	Args        []string
 	Options     []string
 	Description string
-	fn          func(*rokka.Client, map[string]string, map[string]string) error
+	fn          func(*rokka.Client, *Log, map[string]string, map[string]string) error
 }
 
 func (c *Command) TakesOption(key string) bool {
@@ -38,11 +38,11 @@ func (c *Command) TakesOption(key string) bool {
 }
 
 var Commands = []Command{
-	Command{[]string{"stackoptions", "list"}, nil, "Show default stack options", getStackoptions},
-	Command{[]string{"organizations", "get", "<name>"}, nil, "Get details of an organization", getOrganization},
+	{[]string{"stackoptions", "list"}, nil, "Show default stack options", getStackOptions},
+	{[]string{"organizations", "get", "<name>"}, nil, "Get details of an organization", getOrganization},
 }
 
-func ExecCommand(cl *rokka.Client, userArgs []string) error {
+func ExecCommand(cl *rokka.Client, logger *Log, userArgs []string) error {
 	hasMatch := false
 
 	for _, c := range Commands {
@@ -80,7 +80,7 @@ func ExecCommand(cl *rokka.Client, userArgs []string) error {
 					split := strings.Split(option, "=")
 					if len(split) == 2 && split[0] != "" && split[1] != "" {
 						if !c.TakesOption(split[0]) {
-							return fmt.Errorf(`Unsupported option "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " "))
+							return fmt.Errorf(`cli: unsupported option "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " "))
 						}
 
 						options[split[0]] = split[1]
@@ -88,9 +88,9 @@ func ExecCommand(cl *rokka.Client, userArgs []string) error {
 				}
 			}
 
-			return c.fn(cl, positionalArgs, options)
+			return c.fn(cl, logger, positionalArgs, options)
 		}
 	}
 
-	return UnknownCommandError(fmt.Sprintf(`Unknown command "%s"`, strings.Join(userArgs, " ")))
+	return UnknownCommandError(fmt.Sprintf(`cli: Unknown command "%s"`, strings.Join(userArgs, " ")))
 }
