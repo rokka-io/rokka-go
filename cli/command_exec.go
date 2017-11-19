@@ -23,7 +23,10 @@ func (e UnknownCommandError) Error() string {
 	return string(e)
 }
 
-var funcMap = template.FuncMap{"json": PrettyJSON}
+var funcMap = template.FuncMap{
+	"json": PrettyJSON,
+	"date": PrettyDate,
+}
 
 func ExecCommand(cl *rokka.Client, options *CommandOptions, userArgs []string) error {
 	hasMatch := false
@@ -84,12 +87,12 @@ func ExecCommand(cl *rokka.Client, options *CommandOptions, userArgs []string) e
 				return err
 			}
 
-			t, err := template.New("").Funcs(funcMap).Parse(tmpl + "\n")
+			t, err := template.New("").Funcs(funcMap).Parse(tmpl)
 			if err != nil {
 				return fmt.Errorf("cli: Error parsing response template: %s", err)
 			}
 
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			err = t.Execute(w, res)
 			if err != nil {
 				return fmt.Errorf("cli: Error formatting response: %s", err)

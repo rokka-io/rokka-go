@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 func PrettyJSON(data interface{}) (string, error) {
@@ -25,4 +26,8 @@ func PrettyJSON(data interface{}) (string, error) {
 	}
 
 	return pretty.String(), nil
+}
+
+func PrettyDate(t time.Time) string {
+	return t.Format("Mon, January _2 2006, 15:04:05Z0700")
 }

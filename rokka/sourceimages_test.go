@@ -34,3 +34,17 @@ func TestListSourceImagesWithLimitAndOffset(t *testing.T) {
 
 	t.Log(res)
 }
+
+func TestGetSourceImage(t *testing.T) {
+	ts := test.NewMockAPI("./fixtures/GetSourceImage.json", http.StatusOK)
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	res, err := c.GetSourceImage("test", "hash")
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(res)
+}
