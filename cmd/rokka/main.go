@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/rokka-io/rokka-go/cli"
 	"github.com/rokka-io/rokka-go/rokka"
@@ -35,7 +37,7 @@ func init() {
 	flag.BoolVar(&version, "version", false, "Print current version")
 
 	flag.Usage = func() {
-		logger.Errorf("Usage: %s <command>\n\n", os.Args[0])
+		logger.Errorf("Usage: %s <command> [query=val query2=val2 ...]\n\n", os.Args[0])
 		logger.Errorf("Commands:\n%s\n", getCommandUsages())
 		logger.Errorf("%s", "Options:\n")
 		flag.PrintDefaults()
@@ -112,14 +114,16 @@ func main() {
 }
 
 func getCommandUsages() string {
-	var s string
+	var b bytes.Buffer
+	w := tabwriter.NewWriter(&b, 0, 0, 2, ' ', 0)
 	for _, c := range cli.Commands {
 		options := ""
 		if len(c.QueryParams) != 0 {
-			options = fmt.Sprintf("\t (Query Parameters: %s)", strings.Join(c.QueryParams, ", "))
+			options = fmt.Sprintf("Query: %s", strings.Join(c.QueryParams, ", "))
 		}
-		s = s + fmt.Sprintf("  %s\t%s%s\n", strings.Join(c.Args, " "), c.Description, options)
+		fmt.Fprintf(w, "  %s\t%s\t%s\n", strings.Join(c.Args, " "), c.Description, options)
 	}
+	w.Flush()
 
-	return s
+	return b.String()
 }
