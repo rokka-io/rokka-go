@@ -38,3 +38,12 @@ func listSourceImages(c *rokka.Client, args map[string]string, options map[strin
 
 	return res, nil
 }
+
+func getSourceImage(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+	res, err := c.GetSourceImage(args["org"], args["hash"])
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

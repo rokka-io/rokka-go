@@ -39,19 +39,27 @@ var getOrganizationCommand = Command{
 	Args:        []string{"organizations", "get", "<name>"},
 	Description: "Get details of an organization",
 	fn:          getOrganization,
-	template:    "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}",
+	template:    "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n",
 }
 
-var listStackOptionsCommand = Command{
+var listSourceImagesCommand = Command{
 	Args:        []string{"sourceimages", "list", "<org>"},
 	QueryParams: []string{"limit", "offset"},
 	Description: "List source images",
 	fn:          listSourceImages,
-	template:    "Name\tHash\tDetails\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.Format}}, {{.Width}}x{{.Height}}\n{{end}}\nTotal: {{.Total}}",
+	template:    "Name\tHash\tDetails\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.MimeType}}, {{.Width}}x{{.Height}}\n{{end}}\nTotal: {{.Total}}\n",
+}
+
+var getSourceImageCommand = Command{
+	Args:        []string{"sourceimages", "get", "<org>", "<hash>"},
+	Description: "Get details of a source image by hash",
+	fn:          getSourceImage,
+	template:    "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{date .Created}}\nBinary hash:\t{{.BinaryHash}}\n{{if .UserMetadata}}User metadata:\n{{range $key, $value := .UserMetadata}}  {{$key}}:\t{{$value}}\n{{end}}{{end}}",
 }
 
 var Commands = []Command{
 	getStackOptionsCommand,
 	getOrganizationCommand,
-	listStackOptionsCommand,
+	listSourceImagesCommand,
+	getSourceImageCommand,
 }
