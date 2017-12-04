@@ -57,9 +57,17 @@ var getSourceImageCommand = Command{
 	template:    "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{date .Created}}\nBinary hash:\t{{.BinaryHash}}\n{{if .UserMetadata}}User metadata:\n{{range $key, $value := .UserMetadata}}  {{$key}}:\t{{$value}}\n{{end}}{{end}}",
 }
 
+var listStacksCommand = Command{
+	Args:        []string{"stacks", "list", "<org>"},
+	Description: "List stacks for an organization",
+	fn:          listStacks,
+	template:    "Name\tOperations\n{{range .Items}}{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}\n{{end}}",
+}
+
 var Commands = []Command{
 	getStackOptionsCommand,
 	getOrganizationCommand,
 	listSourceImagesCommand,
 	getSourceImageCommand,
+	listStacksCommand,
 }
