@@ -54,7 +54,15 @@ var getSourceImageCommand = Command{
 	Args:        []string{"sourceimages", "get", "<org>", "<hash>"},
 	Description: "Get details of a source image by hash",
 	fn:          getSourceImage,
-	template:    "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{date .Created}}\nBinary hash:\t{{.BinaryHash}}\n{{if .UserMetadata}}User metadata:\n{{range $key, $value := .UserMetadata}}  {{$key}}:\t{{$value}}\n{{end}}{{end}}",
+	template:    "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{datetime .Created}}\nBinary hash:\t{{.BinaryHash}}\n{{if .UserMetadata}}User metadata:\n{{range $key, $value := .UserMetadata}}  {{$key}}:\t{{$value}}\n{{end}}{{end}}",
+}
+
+var getStatsCommand = Command{
+	Args:        []string{"stats", "get", "<org>"},
+	QueryParams: []string{"from", "to"},
+	Description: "Get statistics for an organization",
+	fn:          getStats,
+	template:    "Date\tDownloaded (Bytes)\tSpace (Bytes)\tFiles\n{{range $_, $e := .}}{{date $e.Date}}\t{{ $e.Downloaded }}\t{{ $e.Space }}\t{{ $e.Files }}\n{{end}}",
 }
 
 var listStacksCommand = Command{
@@ -70,4 +78,5 @@ var Commands = []Command{
 	listSourceImagesCommand,
 	getSourceImageCommand,
 	listStacksCommand,
+	getStatsCommand,
 }

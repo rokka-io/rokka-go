@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
@@ -30,4 +33,54 @@ func getSourceImage(c *rokka.Client, args map[string]string, options map[string]
 
 func listStacks(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	return c.ListStacks(args["org"])
+}
+
+type dailyStats struct {
+	Date                     time.Time
+	Space, Files, Downloaded int
+}
+
+func getStats(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+	setDefaultValue(options, "from", time.Now().Add(-30*24*time.Hour).Format("2006-01-02"))
+	setDefaultValue(options, "to", time.Now().Format("2006-01-02"))
+
+	from, err := time.Parse("2006-01-02", options["from"])
+	if err != nil {
+		return nil, fmt.Errorf(`Invalid format for parameter "from". Expected YYYY-MM-DD, got "%s"`, options["from"])
+	}
+	to, err := time.Parse("2006-01-02", options["to"])
+	if err != nil {
+		return nil, fmt.Errorf(`Invalid format for parameter "to". Expected YYYY-MM-DD, got "%s"`, options["to"])
+	}
+
+	res, err := c.GetStats(args["org"], options)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]dailyStats)
+	for i, max := 0, int(to.Sub(from).Hours()/24); i <= max; i++ {
+		d := from.Add(time.Duration(i) * 24 * time.Hour)
+		result[d.Format("2006-01-02")] = dailyStats{Date: d}
+	}
+	for _, v := range res.SpaceInBytes {
+		d := v.Timestamp.Format("2006-01-02")
+		r := result[d]
+		r.Space = v.Value
+		result[d] = r
+	}
+	for _, v := range res.NumberOfFiles {
+		d := v.Timestamp.Format("2006-01-02")
+		r := result[d]
+		r.Files = v.Value
+		result[d] = r
+	}
+	for _, v := range res.BytesDownloaded {
+		d := v.Timestamp.Format("2006-01-02")
+		r := result[d]
+		r.Downloaded = v.Value
+		result[d] = r
+	}
+
+	return result, nil
 }

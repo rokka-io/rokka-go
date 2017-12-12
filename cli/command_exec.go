@@ -24,8 +24,9 @@ func (e UnknownCommandError) Error() string {
 }
 
 var funcMap = template.FuncMap{
-	"json": PrettyJSON,
-	"date": PrettyDate,
+	"json":     PrettyJSON,
+	"datetime": PrettyDateTime,
+	"date":     PrettyDate,
 }
 
 func ExecCommand(cl *rokka.Client, options *CommandOptions, userArgs []string) error {
