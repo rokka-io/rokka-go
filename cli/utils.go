@@ -28,6 +28,10 @@ func PrettyJSON(data interface{}) (string, error) {
 	return pretty.String(), nil
 }
 
-func PrettyDate(t time.Time) string {
+func PrettyDateTime(t time.Time) string {
 	return t.Format("Mon, January _2 2006, 15:04:05Z0700")
+}
+
+func PrettyDate(t time.Time) string {
+	return t.Format("Jan _2 2006")
 }
