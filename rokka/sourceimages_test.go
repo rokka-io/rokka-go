@@ -21,13 +21,23 @@ func TestListSourceImages(t *testing.T) {
 	t.Log(res)
 }
 
-func TestListSourceImagesWithLimitAndOffset(t *testing.T) {
+func TestListSourceImagesWithQueryParams(t *testing.T) {
 	ts := test.NewMockAPI("./fixtures/ListSourceImagesWithLimitAndOffset.json", http.StatusOK)
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.ListSourceImages("test", map[string]string{"limit": "10", "offset": "20"})
+	res, err := c.ListSourceImages("test", map[string]string{
+		"limit":      "10",
+		"offset":     "20",
+		"hash":       "73ecc577d1c51941647378f3460675b6ad7c4fff",
+		"binaryhash": "b9914b12d668dfb6e35fe85fd4a52be1df4aa9ff",
+		"size":       "39189",
+		"format":     "png",
+		"width":      "1920",
+		"height":     "960",
+		"created":    "2017-11-14T10:10:40+00:00",
+	})
 	if err != nil {
 		t.Error(err)
 	}
