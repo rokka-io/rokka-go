@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
@@ -66,11 +68,20 @@ var listSourceImagesCommand = Command{
 	template:    "Name\tHash\tDetails\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.MimeType}}, {{.Width}}x{{.Height}}\n{{end}}\nTotal: {{.Total}}\n",
 }
 
+const sourceImageTemplate = "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{datetime .Created}}\nBinary hash:\t{{.BinaryHash}}{{if .UserMetadata}}\nUser metadata:{{range $key, $value := .UserMetadata}}\n  {{$key}}:\t{{$value}}{{end}}{{end}}{{if .DynamicMetadata}}\nDynamic metadata:{{range $key, $value := .DynamicMetadata}}\n  {{$key}}:\t{{$value}}{{end}}{{end}}\n"
+
 var getSourceImageCommand = Command{
 	Args:        []string{"sourceimages", "get", "<org>", "<hash>"},
 	Description: "Get details of a source image by hash",
 	fn:          getSourceImage,
-	template:    "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{datetime .Created}}\nBinary hash:\t{{.BinaryHash}}\n{{if .UserMetadata}}User metadata:\n{{range $key, $value := .UserMetadata}}  {{$key}}:\t{{$value}}\n{{end}}{{end}}",
+	template:    sourceImageTemplate,
+}
+
+var createSourceImageCommand = Command{
+	Args:        []string{"sourceimages", "create", "<org>", "<file>"},
+	Description: "Upload image",
+	fn:          createSourceImage,
+	template:    fmt.Sprintf("{{range .Items}}%s{{end}}", sourceImageTemplate),
 }
 
 var getStatsCommand = Command{
@@ -95,6 +106,7 @@ var Commands = []Command{
 	createOrganizationCommand,
 	listSourceImagesCommand,
 	getSourceImageCommand,
+	createSourceImageCommand,
 	listStacksCommand,
 	getStatsCommand,
 }

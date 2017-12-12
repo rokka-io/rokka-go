@@ -2,6 +2,7 @@ package rokka
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/rokka-io/rokka-go/test"
@@ -52,6 +53,48 @@ func TestGetSourceImage(t *testing.T) {
 	c := NewClient(&Config{APIAddress: ts.URL})
 
 	res, err := c.GetSourceImage("test", "hash")
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(res)
+}
+
+func TestCreateSourceImage(t *testing.T) {
+	ts := test.NewMockAPI("./fixtures/CreateSourceImage.json", http.StatusOK)
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	file, err := os.Open("./fixtures/image.png")
+	if err != nil {
+		t.Error(err)
+	}
+	defer file.Close()
+
+	res, err := c.CreateSourceImage("test", "image", file)
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(res)
+}
+
+func TestCreateSourceImageWithMetadata(t *testing.T) {
+	ts := test.NewMockAPI("./fixtures/CreateSourceImageWithMetadata.json", http.StatusOK)
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	file, err := os.Open("./fixtures/image.png")
+	if err != nil {
+		t.Error(err)
+	}
+	defer file.Close()
+
+	userMetadata := map[string]interface{}{"key1": "value1"}
+	dynamicMetadata := map[string]interface{}{"subject_area": map[string]int{"x": 50, "y": 50, "width": 10, "height": 10}}
+	res, err := c.CreateSourceImageWithMetadata("test", "image", file, userMetadata, dynamicMetadata)
 	if err != nil {
 		t.Error(err)
 	}

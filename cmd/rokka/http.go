@@ -22,7 +22,7 @@ func NewHTTPClient(log *cli.Log) *HTTPClient {
 
 func (hc *HTTPClient) Do(req *http.Request) (*http.Response, error) {
 	if hc.log.Verbose {
-		dump, err := httputil.DumpRequest(req, true)
+		dump, err := httputil.DumpRequest(req, req.Header.Get("Content-Type") == "application/json")
 		if err != nil {
 			hc.log.Errorf("Unable to dump request: %s\n", err)
 		} else {
@@ -32,7 +32,7 @@ func (hc *HTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 	resp, err := hc.c.Do(req)
 	if err == nil && hc.log.Verbose {
-		dump, err := httputil.DumpResponse(resp, true)
+		dump, err := httputil.DumpResponse(resp, resp.Header.Get("Content-Type") == "application/json")
 		if err != nil {
 			hc.log.Errorf("Unable to dump request: %s\n", err)
 		} else {
