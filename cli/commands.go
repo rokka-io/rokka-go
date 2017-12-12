@@ -44,7 +44,7 @@ var getOrganizationCommand = Command{
 
 var listSourceImagesCommand = Command{
 	Args:        []string{"sourceimages", "list", "<org>"},
-	QueryParams: []string{"limit", "offset"},
+	QueryParams: []string{"limit", "offset", "hash", "binaryhash", "size", "format", "width", "height", "created"},
 	Description: "List source images",
 	fn:          listSourceImages,
 	template:    "Name\tHash\tDetails\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.MimeType}}, {{.Width}}x{{.Height}}\n{{end}}\nTotal: {{.Total}}\n",
