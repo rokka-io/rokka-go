@@ -2,6 +2,7 @@ package rokka
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -38,7 +39,7 @@ type GetSourceImageResponse struct {
 func (c *Client) ListSourceImages(org string, query map[string]string) (ListSourceImagesResponse, error) {
 	result := ListSourceImagesResponse{}
 
-	req, err := c.NewRequest("GET", "/sourceimages/"+org, nil, query)
+	req, err := c.NewRequest(http.MethodGet, "/sourceimages/"+org, nil, query)
 	if err != nil {
 		return result, err
 	}
@@ -51,7 +52,7 @@ func (c *Client) ListSourceImages(org string, query map[string]string) (ListSour
 func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error) {
 	result := GetSourceImageResponse{}
 
-	req, err := c.NewRequest("GET", fmt.Sprintf("/sourceimages/%s/%s", org, hash), nil, nil)
+	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/sourceimages/%s/%s", org, hash), nil, nil)
 	if err != nil {
 		return result, err
 	}

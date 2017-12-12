@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/user"
+	"path"
 	"strings"
 	"text/tabwriter"
 
@@ -22,6 +24,7 @@ var (
 	verbose    bool
 	template   string
 	version    bool
+	configPath string
 
 	logger cli.Log
 )
@@ -29,12 +32,18 @@ var (
 func init() {
 	logger = cli.Log{}
 
+	p, err := getPath()
+	if err != nil {
+		panic("Unable to get config path: " + err.Error())
+	}
+
 	flag.StringVar(&apiKey, "apiKey", "", "API key")
 	flag.StringVar(&apiAddress, "apiAddress", "", "API address")
 	flag.BoolVar(&raw, "raw", false, "Show raw HTTP response")
 	flag.BoolVar(&verbose, "verbose", false, "Enable verbose mode")
 	flag.StringVar(&template, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
 	flag.BoolVar(&version, "version", false, "Print current version")
+	flag.StringVar(&configPath, "configPath", p, "Path for storing API key config")
 
 	flag.Usage = func() {
 		logger.Errorf("Usage: %s <command> [query=val query2=val2 ...]\n\n", os.Args[0])
@@ -44,6 +53,15 @@ func init() {
 	}
 }
 
+func getPath() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	return path.Join(usr.HomeDir, ".rokka", "config"), nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -51,6 +69,8 @@ func main() {
 		logger.Printf("Version: %s\n", cliVersion)
 		os.Exit(0)
 	}
+
+	cli.SetConfigPath(configPath)
 
 	args := flag.Args()
 
@@ -69,17 +89,13 @@ func main() {
 		cfg.APIKey = apiKey
 	}
 
-	if len(apiAddress) != 0 {
-		cfg.APIAddress = apiAddress
-	}
-
 	logger.Verbose = verbose
 
 	hc := NewHTTPClient(&logger)
 
 	cl := rokka.NewClient(&rokka.Config{
 		APIKey:     cfg.APIKey,
-		APIAddress: cfg.APIAddress,
+		APIAddress: apiAddress,
 		HTTPClient: hc,
 	})
 

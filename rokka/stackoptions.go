@@ -1,5 +1,7 @@
 package rokka
 
+import "net/http"
+
 type StackOptionsResponse struct {
 	Properties map[string]struct {
 		Type      string      `json:"type"`
@@ -14,7 +16,7 @@ type StackOptionsResponse struct {
 func (c *Client) GetStackOptions() (StackOptionsResponse, error) {
 	result := StackOptionsResponse{}
 
-	req, err := c.NewRequest("GET", "/stackoptions", nil, nil)
+	req, err := c.NewRequest(http.MethodGet, "/stackoptions", nil, nil)
 	if err != nil {
 		return result, err
 	}
