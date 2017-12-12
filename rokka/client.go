@@ -73,6 +73,8 @@ func (e StatusCodeError) Error() string {
 	return s
 }
 
+type rh func(interface{}, *http.Response) error
+
 // DefaultConfig is used when calling NewClient with not all config options set.
 func DefaultConfig() *Config {
 	return &Config{
@@ -113,9 +115,10 @@ func NewClient(config *Config) (c *Client) {
 	}
 }
 
-// Call executes an HTTP request. It automatically adds necessary headers and decodes the JSON body into `v`.
+// CallWithCustomRH executes an HTTP request.
+// It automatically adds the Api-Version and Api-Key headers to the request.
 // If the response contains a status code >= 400 a StatusCodeError is returned.
-func (c *Client) Call(req *http.Request, v interface{}) error {
+func (c *Client) CallWithCustomRH(req *http.Request, v interface{}, responseHandler rh) error {
 	req.Header.Add("Api-Version", c.config.APIVersion)
 	req.Header.Add("Accept", "application/json")
 
@@ -132,6 +135,10 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
+
+	if responseHandler != nil {
+		return responseHandler(v, resp)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -167,6 +174,10 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 		}
 	}
 	return nil
+}
+
+func (c *Client) Call(req *http.Request, v interface{}) error {
+	return c.CallWithCustomRH(req, v, nil)
 }
 
 // NewRequest constructs a new http.Request used for executing using Call.

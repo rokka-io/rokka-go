@@ -72,6 +72,16 @@ type CreateSourceImageResponse struct {
 	Items []GetSourceImageResponse `json:"items"`
 }
 
+// AddDynamicMetadataOptions defines the accepted options for adding dynamic metadata to an image.
+type AddDynamicMetadataOptions struct {
+	DeletePrevious bool `url:"deletePrevious,omitempty"`
+}
+
+// AddDynamicMetadataResponse contains the location of the updated image.
+type AddDynamicMetadataResponse struct {
+	Location string
+}
+
 // ListSourceImages gets a paginated list of source images.
 //
 // See: https://rokka.io/documentation/references/searching-images.html
@@ -162,6 +172,48 @@ func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader,
 
 	req.Header.Add("Content-Type", w.FormDataContentType())
 	err = c.Call(req, &result)
+
+	return result, err
+}
+
+func dynamicMetadataResponseHandler(v interface{}, resp *http.Response) error {
+	if resp.StatusCode == 204 {
+		dynamicMetadataResponse, ok := v.(*AddDynamicMetadataResponse)
+
+		if ok {
+			dynamicMetadataResponse.Location = resp.Header.Get("Location")
+
+			return nil
+		}
+	}
+
+	return StatusCodeError{
+		Code: resp.StatusCode,
+	}
+}
+
+// AddDynamicMetadata updates a source image by adding arbitrary metadata.
+// Rokka generates a new image hash when calling this function. The return value of this call contains the location of the new image.
+// If deletePrevious is true, the previous image will be deleted.
+//
+// See: https://rokka.io/documentation/references/dynamic-metadata.html
+func (c *Client) AddDynamicMetadata(org, hash, name, jsonBody string, options AddDynamicMetadataOptions) (AddDynamicMetadataResponse, error) {
+	result := AddDynamicMetadataResponse{}
+
+	b := bytes.NewBuffer([]byte(jsonBody))
+
+	qs, err := query.Values(options)
+	if err != nil {
+		return result, err
+	}
+
+	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, name), b, qs)
+
+	if err != nil {
+		return result, err
+	}
+
+	err = c.CallWithCustomRH(req, &result, dynamicMetadataResponseHandler)
 
 	return result, err
 }
