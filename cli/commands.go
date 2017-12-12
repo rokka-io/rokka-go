@@ -43,11 +43,19 @@ var getStackOptionsCommand = Command{
 	template:    rawTemplate,
 }
 
+var organizationTemplate = "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n"
+
 var getOrganizationCommand = Command{
 	Args:        []string{"organizations", "get", "<org>"},
 	Description: "Get details of an organization",
 	fn:          getOrganization,
-	template:    "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n",
+	template:    organizationTemplate,
+}
+
+var createOrganizationCommand = Command{
+	Args:     []string{"organization", "create", "<org>", "<billingEmail>", "<displayName>"},
+	fn:       createOrganization,
+	template: organizationTemplate,
 }
 
 var listSourceImagesCommand = Command{
@@ -84,6 +92,7 @@ var Commands = []Command{
 	loginCommand,
 	getStackOptionsCommand,
 	getOrganizationCommand,
+	createOrganizationCommand,
 	listSourceImagesCommand,
 	getSourceImageCommand,
 	listStacksCommand,

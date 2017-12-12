@@ -33,25 +33,29 @@ func login(c *rokka.Client, _ map[string]string, options map[string]string) (int
 	return "Login successful", nil
 }
 
-func getStackOptions(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+func getStackOptions(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	return c.GetStackOptions()
 }
 
-func getOrganization(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+func getOrganization(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	return c.GetOrganization(args["org"])
 }
 
-func listSourceImages(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+func createOrganization(c *rokka.Client, args, options map[string]string) (interface{}, error) {
+	return c.CreateOrganization(args["org"], args["billingEmail"], args["displayName"])
+}
+
+func listSourceImages(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	setDefaultValue(options, "limit", "20")
 
 	return c.ListSourceImages(args["org"], options)
 }
 
-func getSourceImage(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+func getSourceImage(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	return c.GetSourceImage(args["org"], args["hash"])
 }
 
-func listStacks(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+func listStacks(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	return c.ListStacks(args["org"])
 }
 
@@ -60,7 +64,7 @@ type dailyStats struct {
 	Space, Files, Downloaded int
 }
 
-func getStats(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+func getStats(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	setDefaultValue(options, "from", time.Now().Add(-30*24*time.Hour).Format("2006-01-02"))
 	setDefaultValue(options, "to", time.Now().Format("2006-01-02"))
 
