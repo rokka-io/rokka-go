@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,12 +14,31 @@ func setDefaultValue(data map[string]string, key, val string) {
 	}
 }
 
+func login(c *rokka.Client, _ map[string]string, options map[string]string) (interface{}, error) {
+	valid, err := c.ValidAPIKey()
+	if err != nil {
+		return nil, err
+	}
+	if !valid {
+		return nil, errors.New("invalid API key")
+	}
+
+	cfg := Config{
+		APIKey: c.Config.APIKey,
+	}
+	err = SaveConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return "Login successful", nil
+}
+
 func getStackOptions(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
 	return c.GetStackOptions()
 }
 
 func getOrganization(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
-	return c.GetOrganization(args["name"])
+	return c.GetOrganization(args["org"])
 }
 
 func listSourceImages(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {

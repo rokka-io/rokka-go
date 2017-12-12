@@ -1,5 +1,7 @@
 package rokka
 
+import "net/http"
+
 type OrganizationResponse struct {
 	ID           string `json:"id"`
 	DisplayName  string `json:"display_name"`
@@ -14,7 +16,7 @@ type OrganizationResponse struct {
 func (c *Client) GetOrganization(name string) (OrganizationResponse, error) {
 	result := OrganizationResponse{}
 
-	req, err := c.NewRequest("GET", "/organizations/"+name, nil, nil)
+	req, err := c.NewRequest(http.MethodGet, "/organizations/"+name, nil, nil)
 	if err != nil {
 		return result, err
 	}

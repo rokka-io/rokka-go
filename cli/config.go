@@ -4,35 +4,27 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 )
 
 type Config struct {
-	APIKey       string `json:"apiKey"`
-	APIAddress   string `json:"apiAddress"`
-	Organization string `json:"organization"`
+	APIKey string `json:"apiKey"`
 }
 
-func getPath(u *user.User) string {
-	return path.Join(u.HomeDir, ".rokka", "config")
+var configPath string
+
+func SetConfigPath(p string) {
+	configPath = p
 }
 
 func GetConfig() (Config, error) {
 	config := Config{}
 
-	usr, err := user.Current()
-	if err != nil {
-		return config, err
-	}
-
-	p := getPath(usr)
-
-	if _, err := os.Stat(p); os.IsNotExist(err) {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		return config, nil
 	}
 
-	content, err := ioutil.ReadFile(p)
+	content, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return config, err
 	}
@@ -42,4 +34,31 @@ func GetConfig() (Config, error) {
 	}
 
 	return config, nil
+}
+
+func SaveConfig(c Config) error {
+	dir := path.Dir(configPath)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.Mkdir(dir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	d, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(configPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(d)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

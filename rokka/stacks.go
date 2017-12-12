@@ -1,6 +1,9 @@
 package rokka
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 type StacksListResponse struct {
 	Items []struct {
@@ -19,7 +22,7 @@ type StacksListResponse struct {
 func (c *Client) ListStacks(org string) (StacksListResponse, error) {
 	result := StacksListResponse{}
 
-	req, err := c.NewRequest("GET", "/stacks/"+org, nil, nil)
+	req, err := c.NewRequest(http.MethodGet, "/stacks/"+org, nil, nil)
 	if err != nil {
 		return result, err
 	}

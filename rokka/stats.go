@@ -1,6 +1,9 @@
 package rokka
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 type StatsResponseValue struct {
 	Timestamp time.Time `json:"timestamp"`
@@ -17,7 +20,7 @@ type StatsResponse struct {
 func (c *Client) GetStats(name string, query map[string]string) (StatsResponse, error) {
 	result := StatsResponse{}
 
-	req, err := c.NewRequest("GET", "/stats/"+name, nil, query)
+	req, err := c.NewRequest(http.MethodGet, "/stats/"+name, nil, query)
 	if err != nil {
 		return result, err
 	}

@@ -29,14 +29,22 @@ func (c *Command) TakesQueryParam(key string) bool {
 
 const rawTemplate = "{{json .}}"
 
+var loginCommand = Command{
+	Args:        []string{"login"},
+	Description: "Store API key in config",
+	fn:          login,
+	template:    "{{.}}\n",
+}
+
 var getStackOptionsCommand = Command{
 	Args:        []string{"stackoptions", "list"},
 	Description: "Show default stack options",
 	fn:          getStackOptions,
 	template:    rawTemplate,
 }
+
 var getOrganizationCommand = Command{
-	Args:        []string{"organizations", "get", "<name>"},
+	Args:        []string{"organizations", "get", "<org>"},
 	Description: "Get details of an organization",
 	fn:          getOrganization,
 	template:    "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n",
@@ -73,6 +81,7 @@ var listStacksCommand = Command{
 }
 
 var Commands = []Command{
+	loginCommand,
 	getStackOptionsCommand,
 	getOrganizationCommand,
 	listSourceImagesCommand,
