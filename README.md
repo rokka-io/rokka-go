@@ -1,5 +1,9 @@
 # Rokka API client library for Go
 
+[![GoDoc](https://godoc.org/github.com/rokka-io/rokka-go?status.svg)](https://godoc.org/github.com/rokka-io/rokka-go)
+[![Build Status](https://travis-ci.org/rokka-io/rokka-go.svg?branch=master)](https://travis-ci.org/rokka-io/rokka-go)
+[![Coverage Status](https://coveralls.io/repos/github/rokka-io/rokka-go/badge.svg?branch=master)](https://coveralls.io/github/rokka-io/rokka-go?branch=master)
+
 *This is currently work in progress*
 
 ## Install
