@@ -1,7 +1,11 @@
 package rokka
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"time"
 )
@@ -21,19 +25,25 @@ type ListSourceImagesResponse struct {
 }
 
 type GetSourceImageResponse struct {
-	Hash         string                 `json:"hash"`
-	ShortHash    string                 `json:"short_hash"`
-	BinaryHash   string                 `json:"binary_hash"`
-	Created      time.Time              `json:"created"`
-	Name         string                 `json:"name"`
-	MimeType     string                 `json:"mimetype"`
-	Format       string                 `json:"format"`
-	Size         int                    `json:"size"`
-	Width        int                    `json:"width"`
-	Height       int                    `json:"height"`
-	Organization string                 `json:"organization"`
-	Link         string                 `json:"link"`
-	UserMetadata map[string]interface{} `json:"user_metadata"`
+	Hash            string                 `json:"hash"`
+	ShortHash       string                 `json:"short_hash"`
+	BinaryHash      string                 `json:"binary_hash"`
+	Created         time.Time              `json:"created"`
+	Name            string                 `json:"name"`
+	MimeType        string                 `json:"mimetype"`
+	Format          string                 `json:"format"`
+	Size            int                    `json:"size"`
+	Width           int                    `json:"width"`
+	Height          int                    `json:"height"`
+	Organization    string                 `json:"organization"`
+	Link            string                 `json:"link"`
+	UserMetadata    map[string]interface{} `json:"user_metadata,omitempty"`
+	DynamicMetadata map[string]interface{} `json:"dynamic_metadata,omitempty"`
+}
+
+type CreateSourceImageResponse struct {
+	Total string                   `json:"total"`
+	Items []GetSourceImageResponse `json:"items"`
 }
 
 func (c *Client) ListSourceImages(org string, query map[string]string) (ListSourceImagesResponse, error) {
@@ -57,6 +67,57 @@ func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error
 		return result, err
 	}
 
+	err = c.Call(req, &result)
+
+	return result, err
+}
+
+func (c *Client) CreateSourceImage(org, name string, data io.Reader) (CreateSourceImageResponse, error) {
+	return c.CreateSourceImageWithMetadata(org, name, data, nil, nil)
+}
+
+func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader, userMetadata, dynamicMetadata map[string]interface{}) (CreateSourceImageResponse, error) {
+	result := CreateSourceImageResponse{}
+
+	b := &bytes.Buffer{}
+	w := multipart.NewWriter(b)
+	fw, err := w.CreateFormFile("filename", name)
+	if err != nil {
+		return result, err
+	}
+	if _, err = io.Copy(fw, data); err != nil {
+		return result, err
+	}
+	if userMetadata != nil {
+		ffw, err := w.CreateFormField("meta_user[0]")
+		if err != nil {
+			return result, err
+		}
+		err = json.NewEncoder(ffw).Encode(userMetadata)
+		if err != nil {
+			return result, err
+		}
+	}
+	if dynamicMetadata != nil {
+		for k, v := range dynamicMetadata {
+			ffw, err := w.CreateFormField(fmt.Sprintf("meta_dynamic[0][%s]", k))
+			if err != nil {
+				return result, err
+			}
+			err = json.NewEncoder(ffw).Encode(v)
+			if err != nil {
+				return result, err
+			}
+		}
+	}
+	w.Close()
+
+	req, err := c.NewRequest(http.MethodPost, fmt.Sprintf("/sourceimages/%s", org), b, nil)
+	if err != nil {
+		return result, err
+	}
+
+	req.Header.Add("Content-Type", w.FormDataContentType())
 	err = c.Call(req, &result)
 
 	return result, err

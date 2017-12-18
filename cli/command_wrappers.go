@@ -3,6 +3,8 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path"
 	"time"
 
 	"github.com/rokka-io/rokka-go/rokka"
@@ -53,6 +55,20 @@ func listSourceImages(c *rokka.Client, args, options map[string]string) (interfa
 
 func getSourceImage(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	return c.GetSourceImage(args["org"], args["hash"])
+}
+
+func createSourceImage(c *rokka.Client, args map[string]string, options map[string]string) (interface{}, error) {
+	if _, err := os.Stat(args["file"]); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	file, err := os.Open(args["file"])
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	return c.CreateSourceImage(args["org"], path.Base(args["file"]), file)
 }
 
 func listStacks(c *rokka.Client, args, options map[string]string) (interface{}, error) {
