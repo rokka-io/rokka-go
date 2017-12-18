@@ -2,6 +2,7 @@ package rokka
 
 import "net/http"
 
+// StackOptionsResponse contains the possible stack options.
 type StackOptionsResponse struct {
 	Properties map[string]struct {
 		Type      string      `json:"type"`
@@ -13,6 +14,7 @@ type StackOptionsResponse struct {
 	} `json:"properties"`
 }
 
+// GetStackOptions returns the possible stack options definition.
 func (c *Client) GetStackOptions() (StackOptionsResponse, error) {
 	result := StackOptionsResponse{}
 

@@ -5,22 +5,26 @@ import (
 	"time"
 )
 
-type StatsResponseValue struct {
+type statsResponseValue struct {
 	Timestamp time.Time `json:"timestamp"`
 	Value     int       `json:"value"`
 	Unit      string    `json:"unit,omitempty"`
 }
 
+// StatsResponse contains time based statistics for an organization.
 type StatsResponse struct {
-	SpaceInBytes    []StatsResponseValue `json:"space_in_bytes"`
-	NumberOfFiles   []StatsResponseValue `json:"number_of_files"`
-	BytesDownloaded []StatsResponseValue `json:"bytes_downloaded"`
+	SpaceInBytes    []statsResponseValue `json:"space_in_bytes"`
+	NumberOfFiles   []statsResponseValue `json:"number_of_files"`
+	BytesDownloaded []statsResponseValue `json:"bytes_downloaded"`
 }
 
-func (c *Client) GetStats(name string, query map[string]string) (StatsResponse, error) {
+// GetStats retrieves statistics for an organization.
+//
+// See: https://rokka.io/documentation/references/stats.html
+func (c *Client) GetStats(org string, query map[string]string) (StatsResponse, error) {
 	result := StatsResponse{}
 
-	req, err := c.NewRequest(http.MethodGet, "/stats/"+name, nil, query)
+	req, err := c.NewRequest(http.MethodGet, "/stats/"+org, nil, query)
 	if err != nil {
 		return result, err
 	}

@@ -26,7 +26,7 @@ func login(c *rokka.Client, _ map[string]string, options map[string]string) (int
 	}
 
 	cfg := Config{
-		APIKey: c.Config.APIKey,
+		APIKey: c.GetConfig().APIKey,
 	}
 	err = SaveConfig(cfg)
 	if err != nil {

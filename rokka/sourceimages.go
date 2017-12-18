@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// ListSourceImagesResponse contains a list of source images alongside a total and pagination links.
 type ListSourceImagesResponse struct {
 	Total  int                      `json:"total"`
 	Items  []GetSourceImageResponse `json:"items"`
@@ -24,6 +25,7 @@ type ListSourceImagesResponse struct {
 	} `json:"links,omitempty"`
 }
 
+// GetSourceImageResponse is an object identifying an image.
 type GetSourceImageResponse struct {
 	Hash            string                 `json:"hash"`
 	ShortHash       string                 `json:"short_hash"`
@@ -46,6 +48,9 @@ type CreateSourceImageResponse struct {
 	Items []GetSourceImageResponse `json:"items"`
 }
 
+// ListSourceImages gets a paginated list of source images.
+//
+// See: https://rokka.io/documentation/references/searching-images.html
 func (c *Client) ListSourceImages(org string, query map[string]string) (ListSourceImagesResponse, error) {
 	result := ListSourceImagesResponse{}
 
@@ -59,6 +64,9 @@ func (c *Client) ListSourceImages(org string, query map[string]string) (ListSour
 	return result, err
 }
 
+// GetSourceImage returns the metadata of a single source image identified by it's hash.
+//
+// See: https://rokka.io/documentation/references/source-images.html#retrieve-data-about-a-source-image
 func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error) {
 	result := GetSourceImageResponse{}
 
