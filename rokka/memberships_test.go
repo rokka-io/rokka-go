@@ -13,10 +13,10 @@ func TestCreateMembership(t *testing.T) {
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.CreateMembership("test", "test@example.org", RoleAdmin)
+	err := c.CreateMembership("test", "test@example.org", RoleAdmin)
 	if err != nil {
 		t.Error(err)
 	}
 
-	t.Log(res)
+	t.Log("Successfully created membership")
 }
