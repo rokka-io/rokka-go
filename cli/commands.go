@@ -113,6 +113,13 @@ var listStacksCommand = command{
 	template:    "Name\tOperations\n{{range .Items}}{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}\n{{end}}",
 }
 
+var createUserCommand = command{
+	Args:        []string{"users", "create", "<org>", "<email>"},
+	Description: "Create a new organization and a user with the given email address",
+	fn:          createUser,
+	template:    "Id:\t{{.ID}}\nEmail:\t{{.Email}}\nAPI Key:\t{{.APIKey}}\n\nAn email containing further information has been sent to you.\n",
+}
+
 // Commands list the available and implemented CLI commands.
 var Commands = []command{
 	loginCommand,
@@ -126,4 +133,5 @@ var Commands = []command{
 	createSourceImageCommand,
 	listStacksCommand,
 	getStatsCommand,
+	createUserCommand,
 }
