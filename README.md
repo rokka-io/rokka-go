@@ -26,4 +26,7 @@ $ go install ./cmd/rokka
 $ GOOS=darwin go build -o ./bin/rokka ./cmd/rokka
 $ GOOS=linux go build -o ./bin/rokka ./cmd/rokka
 $ GOOS=windows go build -o ./bin/rokka ./cmd/rokka
+
+# Update (auto-generate) rokka/operations_objects.go
+$ go generate ./rokka
 ```

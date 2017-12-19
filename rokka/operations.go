@@ -2,8 +2,10 @@ package rokka
 
 import "net/http"
 
+//go:generate go run ../cmd/gen/operations.go
+
 // OperationsResponse contains the available stack options.
-type OperationsResponse map[string]interface{}
+type OperationsResponse map[string]map[string]interface{}
 
 // GetOperations returns the available stack options definition.
 //
