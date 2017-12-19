@@ -136,3 +136,7 @@ func getStats(c *rokka.Client, args, options map[string]string) (interface{}, er
 
 	return result, nil
 }
+
+func createUser(c *rokka.Client, args, options map[string]string) (interface{}, error) {
+	return c.CreateUser(args["org"], args["email"])
+}
