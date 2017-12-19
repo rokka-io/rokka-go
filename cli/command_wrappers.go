@@ -39,6 +39,10 @@ func getStackOptions(c *rokka.Client, args, options map[string]string) (interfac
 	return c.GetStackOptions()
 }
 
+func getOperations(c *rokka.Client, args, options map[string]string) (interface{}, error) {
+	return c.GetOperations()
+}
+
 func getOrganization(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	return c.GetOrganization(args["org"])
 }

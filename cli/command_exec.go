@@ -26,8 +26,9 @@ func (e UnknownCommandError) Error() string {
 
 var funcMap = template.FuncMap{
 	"json":     PrettyJSON,
-	"datetime": PrettyDateTime,
-	"date":     PrettyDate,
+	"datetime": prettyDateTime,
+	"date":     prettyDate,
+	"join":     join,
 }
 
 // ExecCommand searches the available commands, parses arguments accordingly and executes the found command if applicable.
