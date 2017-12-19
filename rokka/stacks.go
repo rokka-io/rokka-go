@@ -5,7 +5,8 @@ import (
 	"time"
 )
 
-type StacksListResponse struct {
+// ListStacksResponse contains a list of stacks each containing a list of operations.
+type ListStacksResponse struct {
 	Items []struct {
 		Organization    string                 `json:"organization"`
 		Name            string                 `json:"name"`
@@ -18,9 +19,11 @@ type StacksListResponse struct {
 	} `json:"items"`
 }
 
-// ListStacks returns the stacks for the specified organizaton.
-func (c *Client) ListStacks(org string) (StacksListResponse, error) {
-	result := StacksListResponse{}
+// ListStacks returns the stacks for the specified organization.
+//
+// See: https://rokka.io/documentation/references/stacks.html#retrieve-a-stack
+func (c *Client) ListStacks(org string) (ListStacksResponse, error) {
+	result := ListStacksResponse{}
 
 	req, err := c.NewRequest(http.MethodGet, "/stacks/"+org, nil, nil)
 	if err != nil {

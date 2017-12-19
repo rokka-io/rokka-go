@@ -91,7 +91,7 @@ func main() {
 
 	logger.Verbose = verbose
 
-	hc := NewHTTPClient(&logger)
+	hc := newHTTPClient(&logger)
 
 	cl := rokka.NewClient(&rokka.Config{
 		APIKey:     cfg.APIKey,

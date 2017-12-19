@@ -6,22 +6,26 @@ import (
 	"net/http"
 )
 
+// OrganizationResponse contains the information about an organization.
 type OrganizationResponse struct {
 	ID           string `json:"id"`
 	DisplayName  string `json:"display_name"`
 	Name         string `json:"name"`
 	BillingEmail string `json:"billing_email"`
-	Limit        struct {
+	Limit        *struct {
 		SpaceInBytes   int `json:"space_in_bytes,omitempty"`
 		TrafficInBytes int `json:"traffic_in_bytes,omitempty"`
 	} `json:"limit,omitempty"`
 }
 
-type CreateOrganizationRequest struct {
+type createOrganizationRequest struct {
 	DisplayName  string `json:"display_name,omitempty"`
 	BillingEmail string `json:"billing_email"`
 }
 
+// GetOrganization returns information about the requested organization if the passed API key is allowed to access it.
+//
+// See: https://rokka.io/documentation/references/organizations.html#read-data-of-one-organization
 func (c *Client) GetOrganization(name string) (OrganizationResponse, error) {
 	result := OrganizationResponse{}
 
@@ -34,11 +38,14 @@ func (c *Client) GetOrganization(name string) (OrganizationResponse, error) {
 	return result, err
 }
 
+// CreateOrganization can be used to create a new organization which is bound to the API key (user) you supplied.
+//
+// See: https://rokka.io/documentation/references/organizations.html#create-an-organization
 func (c *Client) CreateOrganization(name, billingEmail, displayName string) (OrganizationResponse, error) {
 	result := OrganizationResponse{}
 
 	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(CreateOrganizationRequest{
+	err := json.NewEncoder(b).Encode(createOrganizationRequest{
 		DisplayName:  displayName,
 		BillingEmail: billingEmail,
 	})

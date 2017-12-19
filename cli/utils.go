@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// PrettyJSON marshals JSON with an indent.
 func PrettyJSON(data interface{}) (string, error) {
 	var err error
 	var pretty bytes.Buffer
@@ -28,10 +29,12 @@ func PrettyJSON(data interface{}) (string, error) {
 	return pretty.String(), nil
 }
 
+// PrettyDateTime formats a time.Time.
 func PrettyDateTime(t time.Time) string {
 	return t.Format("Mon, January _2 2006, 15:04:05Z0700")
 }
 
+// PrettyDate formats a time.Time.
 func PrettyDate(t time.Time) string {
 	return t.Format("Jan _2 2006")
 }

@@ -7,16 +7,19 @@ import (
 	"path"
 )
 
+// Config stores the APIKey in a file to be used later for authenticating against rokka without having to pass an APIKey as a flag.
 type Config struct {
 	APIKey string `json:"apiKey"`
 }
 
 var configPath string
 
+// SetConfigPath adjusts the global variable configPath which tells where to look for the configuration file.
 func SetConfigPath(p string) {
 	configPath = p
 }
 
+// GetConfig returns the stored config if set. If not it will return an empty configuration object.
 func GetConfig() (Config, error) {
 	config := Config{}
 
@@ -36,6 +39,7 @@ func GetConfig() (Config, error) {
 	return config, nil
 }
 
+// SaveConfig stores the current configuration in configPath.
 func SaveConfig(c Config) error {
 	dir := path.Dir(configPath)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {

@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// ListSourceImagesResponse contains a list of source images alongside a total and pagination links.
 type ListSourceImagesResponse struct {
 	Total  int                      `json:"total"`
 	Items  []GetSourceImageResponse `json:"items"`
@@ -24,6 +25,7 @@ type ListSourceImagesResponse struct {
 	} `json:"links,omitempty"`
 }
 
+// GetSourceImageResponse is an object identifying an image.
 type GetSourceImageResponse struct {
 	Hash            string                 `json:"hash"`
 	ShortHash       string                 `json:"short_hash"`
@@ -41,11 +43,16 @@ type GetSourceImageResponse struct {
 	DynamicMetadata map[string]interface{} `json:"dynamic_metadata,omitempty"`
 }
 
+// CreateSourceImageResponse is returned when creating an image.
+// BUG: Total should be an int like in ListSourceImagesResponse but isn't. This is a bug in the API.
 type CreateSourceImageResponse struct {
 	Total string                   `json:"total"`
 	Items []GetSourceImageResponse `json:"items"`
 }
 
+// ListSourceImages gets a paginated list of source images.
+//
+// See: https://rokka.io/documentation/references/searching-images.html
 func (c *Client) ListSourceImages(org string, query map[string]string) (ListSourceImagesResponse, error) {
 	result := ListSourceImagesResponse{}
 
@@ -59,6 +66,9 @@ func (c *Client) ListSourceImages(org string, query map[string]string) (ListSour
 	return result, err
 }
 
+// GetSourceImage returns the metadata of a single source image identified by it's hash.
+//
+// See: https://rokka.io/documentation/references/source-images.html#retrieve-data-about-a-source-image
 func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error) {
 	result := GetSourceImageResponse{}
 
@@ -72,10 +82,16 @@ func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error
 	return result, err
 }
 
+// CreateSourceImage uploads an image without user or dynamic metadata set.
+//
+// See: https://rokka.io/documentation/references/source-images.html#create-a-source-image
 func (c *Client) CreateSourceImage(org, name string, data io.Reader) (CreateSourceImageResponse, error) {
 	return c.CreateSourceImageWithMetadata(org, name, data, nil, nil)
 }
 
+// CreateSourceImageWithMetadata uploads an image.
+//
+// See: https://rokka.io/documentation/references/source-images.html#create-a-source-image
 func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader, userMetadata, dynamicMetadata map[string]interface{}) (CreateSourceImageResponse, error) {
 	result := CreateSourceImageResponse{}
 

@@ -7,20 +7,21 @@ import (
 	"github.com/rokka-io/rokka-go/cli"
 )
 
-// HTTPClient implements rokka.HTTPRequester
-type HTTPClient struct {
+// httpClient implements rokka.HTTPRequester
+type httpClient struct {
 	c   *http.Client
 	log *cli.Log
 }
 
-func NewHTTPClient(log *cli.Log) *HTTPClient {
-	return &HTTPClient{
+func newHTTPClient(log *cli.Log) *httpClient {
+	return &httpClient{
 		c:   &http.Client{},
 		log: log,
 	}
 }
 
-func (hc *HTTPClient) Do(req *http.Request) (*http.Response, error) {
+// Do executes an HTTP request. If verbose is set this will log the request and response using httputil.
+func (hc *httpClient) Do(req *http.Request) (*http.Response, error) {
 	if hc.log.Verbose {
 		dump, err := httputil.DumpRequest(req, req.Header.Get("Content-Type") == "application/json")
 		if err != nil {

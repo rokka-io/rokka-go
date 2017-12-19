@@ -17,6 +17,7 @@ func init() {
 	positionalArgsRegexp = regexp.MustCompile("^<(.*)>$")
 }
 
+// UnknownCommandError indicates if the passed arguments to rokka CLI are not known.
 type UnknownCommandError string
 
 func (e UnknownCommandError) Error() string {
@@ -29,6 +30,7 @@ var funcMap = template.FuncMap{
 	"date":     PrettyDate,
 }
 
+// ExecCommand searches the available commands, parses arguments accordingly and executes the found command if applicable.
 func ExecCommand(cl *rokka.Client, options *CommandOptions, userArgs []string) error {
 	hasMatch := false
 
@@ -66,7 +68,7 @@ func ExecCommand(cl *rokka.Client, options *CommandOptions, userArgs []string) e
 				for _, queryParam := range userArgs[commandArgsCount-1:] {
 					split := strings.Split(queryParam, "=")
 					if len(split) == 2 && split[0] != "" && split[1] != "" {
-						if !c.TakesQueryParam(split[0]) {
+						if !c.takesQueryParam(split[0]) {
 							return fmt.Errorf(`cli: unsupported query parameter "%s" for command "%s"`, split[0], strings.Join(userArgs[:commandArgsCount], " "))
 						}
 
