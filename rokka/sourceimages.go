@@ -66,7 +66,7 @@ func (c *Client) ListSourceImages(org string, query map[string]string) (ListSour
 	return result, err
 }
 
-// GetSourceImage returns the metadata of a single source image identified by it's hash.
+// GetSourceImage returns the metadata of a single source image identified by its hash.
 //
 // See: https://rokka.io/documentation/references/source-images.html#retrieve-data-about-a-source-image
 func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error) {

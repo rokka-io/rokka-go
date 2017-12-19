@@ -47,6 +47,14 @@ func createOrganization(c *rokka.Client, args, options map[string]string) (inter
 	return c.CreateOrganization(args["org"], args["billingEmail"], args["displayName"])
 }
 
+func createMembership(c *rokka.Client, args, options map[string]string) (interface{}, error) {
+	role, ok := rokka.MembershipRole[args["role"]]
+	if !ok {
+		return nil, fmt.Errorf(`Invalid membership role "%s"`, args["role"])
+	}
+	return nil, c.CreateMembership(args["org"], args["email"], role)
+}
+
 func listSourceImages(c *rokka.Client, args, options map[string]string) (interface{}, error) {
 	setDefaultValue(options, "limit", "20")
 
