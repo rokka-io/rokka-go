@@ -46,7 +46,14 @@ var getStackOptionsCommand = command{
 	template:    rawTemplate,
 }
 
-var organizationTemplate = "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n"
+var getOperationsCommand = command{
+	Args:        []string{"operations", "list"},
+	Description: "Show available operations",
+	fn:          getOperations,
+	template:    "Name:\tDescription:\tProperties:\n{{range $name, $config := .}}{{$name}}\t{{$config.description}}\t{{join $config.properties \", \"}}\n{{end}}",
+}
+
+const organizationTemplate = "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n"
 
 var getOrganizationCommand = command{
 	Args:        []string{"organizations", "get", "<org>"},
@@ -110,6 +117,7 @@ var listStacksCommand = command{
 var Commands = []command{
 	loginCommand,
 	getStackOptionsCommand,
+	getOperationsCommand,
 	getOrganizationCommand,
 	createOrganizationCommand,
 	createMembershipCommand,
