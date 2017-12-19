@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// ListStacksResponse contains a list of stacks each containing the list of operations.
+// ListStacksResponse contains a list of stacks each containing a list of operations.
 type ListStacksResponse struct {
 	Items []struct {
 		Organization    string                 `json:"organization"`
