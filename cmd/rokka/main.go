@@ -117,11 +117,14 @@ func main() {
 	case rokka.StatusCodeError:
 		logger.Errorf("Error: %v\n\n", err)
 
-		s, pErr := cli.PrettyJSON(err.Body)
-		if pErr != nil {
-			logger.Errorf("Error pretty printing JSON: %s", pErr)
+		if len(err.Body) > 0 {
+			s, pErr := cli.PrettyJSON(err.Body)
+			if pErr != nil {
+				logger.Errorf("Error pretty printing JSON: %s", pErr)
+			} else {
+				logger.Printf("%s\n", s)
+			}
 		}
-		logger.Printf("%s\n", s)
 	default:
 		logger.Errorf("Error: %v\n", err)
 	}

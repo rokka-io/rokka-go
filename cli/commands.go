@@ -61,6 +61,12 @@ var createOrganizationCommand = command{
 	template: organizationTemplate,
 }
 
+var createMembershipCommand = command{
+	Args:     []string{"membership", "create", "<org>", "<email>", "<role>"},
+	fn:       createMembership,
+	template: "Membership successfully created.\n",
+}
+
 var listSourceImagesCommand = command{
 	Args:        []string{"sourceimages", "list", "<org>"},
 	QueryParams: []string{"limit", "offset", "hash", "binaryhash", "size", "format", "width", "height", "created"},
@@ -106,6 +112,7 @@ var Commands = []command{
 	getStackOptionsCommand,
 	getOrganizationCommand,
 	createOrganizationCommand,
+	createMembershipCommand,
 	listSourceImagesCommand,
 	getSourceImageCommand,
 	createSourceImageCommand,

@@ -100,21 +100,21 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	decoder := json.NewDecoder(resp.Body)
-
-	if resp.StatusCode < 400 {
-		return decoder.Decode(&v)
-	}
-
-	errorBody, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-
-	return StatusCodeError{
-		resp.StatusCode,
-		errorBody,
+	if resp.StatusCode >= 400 {
+		return StatusCodeError{
+			resp.StatusCode,
+			body,
+		}
 	}
+	// handle empty responses
+	if len(body) == 0 {
+		return nil
+	}
+	return json.Unmarshal(body, &v)
 }
 
 // NewRequest constructs a new http.Request used for executing using Call.
