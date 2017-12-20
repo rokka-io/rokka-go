@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rokka-io/rokka-go/rokka"
+	camelcase "github.com/segmentio/go-camelcase"
 	"github.com/spf13/cobra"
 )
 
@@ -71,6 +72,8 @@ func run(fn func(c *rokka.Client, args []string) (interface{}, error), t string)
 		w.Flush()
 	}
 }
+
+func TitleCamelCase(s string) string { return strings.Title(camelcase.Camelcase(s)) }
 
 // prettyJSON marshals JSON with an indent.
 func prettyJSON(data interface{}) (string, error) {

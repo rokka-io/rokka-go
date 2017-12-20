@@ -11,8 +11,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/rokka-io/rokka-go/cmd/rokka/cli"
 	"github.com/rokka-io/rokka-go/rokka"
-	"github.com/segmentio/go-camelcase"
 )
 
 type operationProperty struct {
@@ -46,14 +46,6 @@ var typeMap = map[string]string{
 	"number":  "float64",
 }
 
-func toStringSlice(list []interface{}) []string {
-	slice := make([]string, len(list))
-	for i, v := range list {
-		slice[i] = v.(string)
-	}
-	return slice
-}
-
 func main() {
 	c := rokka.NewClient(&rokka.Config{})
 
@@ -84,10 +76,10 @@ func main() {
 		sort.Sort(properties)
 		var required, oneOf []string
 		if list, ok := value["required"]; ok {
-			required = toStringSlice(list.([]interface{}))
+			required = cli.ToStringSlice(list.([]interface{}))
 		}
 		if list, ok := value["oneOf"]; ok {
-			oneOf = toStringSlice(list.([]interface{}))
+			oneOf = cli.ToStringSlice(list.([]interface{}))
 		}
 		o := operation{
 			name,
@@ -122,7 +114,7 @@ func main() {
 
 var funcMap = template.FuncMap{
 	"title":          strings.Title,
-	"titleCamelCase": func(s string) string { return strings.Title(camelcase.Camelcase(s)) },
+	"titleCamelCase": cli.TitleCamelCase,
 }
 
 var packageTemplate = template.Must(template.New("").Funcs(funcMap).Parse(`
@@ -132,6 +124,7 @@ package rokka
 // This file was generated at {{ .Timestamp }}
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -148,6 +141,61 @@ type Operation interface {
 	toURLPath() string
 }
 
+type rawStack struct {
+	Name    string          ` + "`" + `json:"name"` + "`" + `
+	Options json.RawMessage ` + "`" + `json:"options"` + "`" + `
+}
+
+// Operations is a slice of Operation implementing json.Unmarshaler and json.Marshaler in order to create
+// the correct operation types for JSON.
+type Operations []Operation
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (o *Operations) UnmarshalJSON(data []byte) error {
+	ops := make([]rawStack, 0)
+	if err := json.Unmarshal(data, &ops); err != nil {
+		return err
+	}
+	for _, v := range ops {
+		op, err := NewOperationByName(v.Name)
+		if err != nil {
+			return err
+		}
+		if err := json.Unmarshal(v.Options, op); err != nil {
+			// BUG(mweibel): We continue here when such an error is reached because rokka sometimes (legacy reasons)
+			//               has options on an operation which are not of the correct type. Should we write something to stdout? also not nice though..
+			continue
+		}
+		*o = append(*o, op.(Operation))
+	}
+	return nil
+}
+
+// MarshalJSON implements json.Marshaler
+func (o Operations) MarshalJSON() ([]byte, error) {
+	ops := make([]map[string]interface{}, len(o))
+	for i, v := range o {
+		ops[i] = make(map[string]interface{})
+		ops[i]["name"] = v.Name()
+		ops[i]["options"] = v
+	}
+
+	return json.Marshal(ops)
+}
+
+var errOperationNotImplemented = errors.New("Operation not implemented")
+
+// NewOperationByName creates a struct of the respective type based on the name given.
+func NewOperationByName(name string) (Operation, error) {
+	switch name {
+		{{- range $i, $op := .Operations }}
+			case "{{ .Name }}":
+				return new({{ title .Name }}Operation), nil
+		{{ end }}
+	}
+	return nil, errOperationNotImplemented
+}
+
 {{- range $i, $op := .Operations }}
 	// {{ title .Name }}Operation is an auto-generated Operation as specified by the rokka API.
 	{{- if (or .OneOf .Required) }}
@@ -157,7 +205,7 @@ type Operation interface {
 	// See: https://rokka.io/documentation/references/operations.html
 	type {{ title .Name }}Operation struct {
 	{{ range .Properties -}}
-		{{ titleCamelCase .Name }} *{{ .Type }}
+		{{ titleCamelCase .Name }} *{{ .Type }} ` + "`" + `json:"{{.Name}},omitempty"` + "`" + `
 	{{ end }}
 	}
 

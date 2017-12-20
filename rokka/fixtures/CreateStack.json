@@ -1,0 +1,33 @@
+{
+  "created": "2018-02-05T15:45:00+00:00",
+  "name": "test-stack",
+  "organization": "test-org",
+  "stack_operations": [
+    {
+      "name": "alpha",
+      "options": {
+        "mode": "mask"
+      }
+    },
+    {
+      "name": "resize",
+      "options": {
+        "height": 100,
+        "width": 120
+      }
+    }
+  ],
+  "stack_options": {
+    "basestack": "test-basestack"
+  },
+  "stack_expressions": [
+    {
+      "expression": "options.dpr >= 2",
+      "overrides": {
+        "options": {
+          "jpq.quality": "60"
+        }
+      }
+    }
+  ]
+}

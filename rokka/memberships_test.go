@@ -8,12 +8,14 @@ import (
 )
 
 func TestCreateMembership(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/CreateMembership.json", http.StatusCreated)
+	org := "test"
+	email := "test@example.org"
+	ts := test.NewMockAPI(test.Routes{"PUT /organizations/" + org + "/memberships/" + email: test.Response{http.StatusCreated, "./fixtures/CreateMembership.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	err := c.CreateMembership("test", "test@example.org", RoleAdmin)
+	err := c.CreateMembership(org, email, RoleAdmin)
 	if err != nil {
 		t.Fatal(err)
 	}
