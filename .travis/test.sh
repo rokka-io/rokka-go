@@ -2,8 +2,6 @@
 
 set -e
 
-dep ensure
-
 # linting
 goimports -d ./
 go tool vet ./
