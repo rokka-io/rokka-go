@@ -16,6 +16,10 @@ $ go get github.com/rokka-io/rokka-go/cmd/rokka
 $ go get github.com/rokka-io/rokka-go/rokka
 ```
 
+## Dependencies
+
+This project uses [dep](https://github.com/golang/dep). Run `dep ensure` for dependencies.
+
 ## Development
 
 ```sh
@@ -26,4 +30,7 @@ $ go install ./cmd/rokka
 $ GOOS=darwin go build -o ./bin/rokka ./cmd/rokka
 $ GOOS=linux go build -o ./bin/rokka ./cmd/rokka
 $ GOOS=windows go build -o ./bin/rokka ./cmd/rokka
+
+# Update (auto-generate) rokka/operations_objects.go
+$ go generate ./rokka
 ```
