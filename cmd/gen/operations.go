@@ -25,6 +25,12 @@ type operation struct {
 	OneOf      []string
 }
 
+type operations []operation
+
+func (o operations) Len() int           { return len(o) }
+func (o operations) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o operations) Less(i, j int) bool { return o[i].Name < o[j].Name }
+
 var typeMap = map[string]string{
 	"integer": "int",
 	"boolean": "bool",
@@ -54,7 +60,7 @@ func main() {
 	}
 	defer f.Close()
 
-	operations := make([]operation, 0)
+	ops := make(operations, 0)
 	for name, value := range res {
 		properties := make([]operationProperty, 0)
 		if propertiesMap, ok := value["properties"].(map[string]interface{}); ok {
@@ -80,16 +86,16 @@ func main() {
 			required,
 			oneOf,
 		}
-		operations = append(operations, o)
+		ops = append(ops, o)
 	}
 
 	var b bytes.Buffer
 	err = packageTemplate.Execute(&b, struct {
 		Timestamp  time.Time
-		Operations []operation
+		Operations operations
 	}{
 		Timestamp:  time.Now(),
-		Operations: operations,
+		Operations: ops,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -153,7 +159,7 @@ import (
 				return nil, fmt.Errorf("unknown option \"%s\"", k)
 			}
 			if reflect.TypeOf(v) != t {
-				return nil, fmt.Errorf("invalid type for option \"%s\"", k)
+				return nil, fmt.Errorf("invalid type (%T) for option \"%s\"", v, k)
 			}
 		}
 		{{- end}}
