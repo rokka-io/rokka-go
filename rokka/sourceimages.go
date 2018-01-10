@@ -8,7 +8,29 @@ import (
 	"mime/multipart"
 	"net/http"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
+
+// ListSourceImagesOptions defines the accepted query string params for GetStats.
+// Giving an empty struct will result in no query string params being sent to rokka.
+//
+// See: https://rokka.io/documentation/references/searching-images.html#range-filtering
+type ListSourceImagesOptions struct {
+	Limit      int    `url:"limit,omitempty"`
+	Offset     int    `url:"offset,omitempty"`
+	Hash       string `url:"hash,omitempty"`
+	BinaryHash string `url:"binaryhash,omitempty"`
+	// Size can be an int or a range. See: https://github.com/rokka-io/rokka-go/issues/32
+	Size   string `url:"size,omitempty"`
+	Format string `url:"format,omitempty"`
+	// Width can be an int or a range. See: https://github.com/rokka-io/rokka-go/issues/32
+	Width string `url:"width,omitempty"`
+	// Height can be an int or a range. See: https://github.com/rokka-io/rokka-go/issues/32
+	Height string `url:"height,omitempty"`
+	// Created needs to be always passed as a range.
+	Created string `url:"created,omitempty"`
+}
 
 // ListSourceImagesResponse contains a list of source images alongside a total and pagination links.
 type ListSourceImagesResponse struct {
@@ -53,10 +75,15 @@ type CreateSourceImageResponse struct {
 // ListSourceImages gets a paginated list of source images.
 //
 // See: https://rokka.io/documentation/references/searching-images.html
-func (c *Client) ListSourceImages(org string, query map[string]string) (ListSourceImagesResponse, error) {
+func (c *Client) ListSourceImages(org string, options ListSourceImagesOptions) (ListSourceImagesResponse, error) {
 	result := ListSourceImagesResponse{}
 
-	req, err := c.NewRequest(http.MethodGet, "/sourceimages/"+org, nil, query)
+	qs, err := query.Values(options)
+	if err != nil {
+		return result, err
+	}
+
+	req, err := c.NewRequest(http.MethodGet, "/sourceimages/"+org, nil, qs)
 	if err != nil {
 		return result, err
 	}

@@ -3,7 +3,16 @@ package rokka
 import (
 	"net/http"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
+
+// GetStatsOptions defines the accepted querystring params for GetStats.
+// Giving an empty struct will result in no querystring params being sent to rokka.
+type GetStatsOptions struct {
+	From string `url:"from,omitempty"`
+	To   string `url:"to,omitempty"`
+}
 
 type statsResponseValue struct {
 	Timestamp time.Time `json:"timestamp"`
@@ -21,10 +30,15 @@ type StatsResponse struct {
 // GetStats retrieves statistics for an organization.
 //
 // See: https://rokka.io/documentation/references/stats.html
-func (c *Client) GetStats(org string, query map[string]string) (StatsResponse, error) {
+func (c *Client) GetStats(org string, options GetStatsOptions) (StatsResponse, error) {
 	result := StatsResponse{}
 
-	req, err := c.NewRequest(http.MethodGet, "/stats/"+org, nil, query)
+	qs, err := query.Values(options)
+	if err != nil {
+		return result, err
+	}
+
+	req, err := c.NewRequest(http.MethodGet, "/stats/"+org, nil, qs)
 	if err != nil {
 		return result, err
 	}

@@ -14,7 +14,7 @@ func TestListSourceImages(t *testing.T) {
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.ListSourceImages("test", nil)
+	res, err := c.ListSourceImages("test", ListSourceImagesOptions{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -28,16 +28,16 @@ func TestListSourceImagesWithQueryParams(t *testing.T) {
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.ListSourceImages("test", map[string]string{
-		"limit":      "10",
-		"offset":     "20",
-		"hash":       "73ecc577d1c51941647378f3460675b6ad7c4fff",
-		"binaryhash": "b9914b12d668dfb6e35fe85fd4a52be1df4aa9ff",
-		"size":       "39189",
-		"format":     "png",
-		"width":      "1920",
-		"height":     "960",
-		"created":    "2017-11-14T10:10:40+00:00",
+	res, err := c.ListSourceImages("test", ListSourceImagesOptions{
+		Limit:      10,
+		Offset:     20,
+		Hash:       "73ecc577d1c51941647378f3460675b6ad7c4fff",
+		BinaryHash: "b9914b12d668dfb6e35fe85fd4a52be1df4aa9ff",
+		Size:       "39189",
+		Format:     "png",
+		Width:      "1920",
+		Height:     "960",
+		Created:    "2017-11-14T10:10:40+00:00",
 	})
 	if err != nil {
 		t.Error(err)

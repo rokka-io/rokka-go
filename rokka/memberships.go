@@ -6,30 +6,23 @@ import (
 	"net/http"
 )
 
-type membershipRole string
+type MembershipRole string
 
 // RoleRead, RoleWrite and RoleAdmin are membership roles.
 const (
-	RoleRead  membershipRole = "read"
-	RoleWrite membershipRole = "write"
-	RoleAdmin membershipRole = "admin"
+	RoleRead  MembershipRole = "read"
+	RoleWrite MembershipRole = "write"
+	RoleAdmin MembershipRole = "admin"
 )
 
-// MembershipRole contains a map of strings to roles.
-var MembershipRole = map[string]membershipRole{
-	"read":  RoleRead,
-	"write": RoleWrite,
-	"admin": RoleAdmin,
-}
-
 type createMembershipRequest struct {
-	Role membershipRole `json:"role"`
+	Role MembershipRole `json:"role"`
 }
 
 // CreateMembership creates a membership for a given email address.
 //
 // See: https://rokka.io/documentation/references/memberships.html#add-user-to-organization
-func (c *Client) CreateMembership(org, email string, role membershipRole) error {
+func (c *Client) CreateMembership(org, email string, role MembershipRole) error {
 	b := new(bytes.Buffer)
 	err := json.NewEncoder(b).Encode(createMembershipRequest{
 		Role: role,

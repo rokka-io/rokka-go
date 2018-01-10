@@ -21,13 +21,13 @@ func TestGetOperations(t *testing.T) {
 	t.Log(res)
 }
 
-func sref(v string) *string { return &v }
-func iref(v int) *int { return &v }
+func sref(v string) *string   { return &v }
+func iref(v int) *int         { return &v }
 func fref(v float64) *float64 { return &v }
 
-var operationObjectsTests = []struct{
-	name string
-	op Operation
+var operationObjectsTests = []struct {
+	name    string
+	op      Operation
 	isValid bool
 	urlPath string
 }{

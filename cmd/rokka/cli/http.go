@@ -1,19 +1,17 @@
-package main
+package cli
 
 import (
 	"net/http"
 	"net/http/httputil"
-
-	"github.com/rokka-io/rokka-go/cli"
 )
 
 // httpClient implements rokka.HTTPRequester
 type httpClient struct {
 	c   *http.Client
-	log *cli.Log
+	log *Log
 }
 
-func newHTTPClient(log *cli.Log) *httpClient {
+func newHTTPClient(log *Log) *httpClient {
 	return &httpClient{
 		c:   &http.Client{},
 		log: log,

@@ -13,7 +13,7 @@ func TestGetStats(t *testing.T) {
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.GetStats("test", nil)
+	res, err := c.GetStats("test", GetStatsOptions{})
 	if err != nil {
 		t.Error(err)
 	}
