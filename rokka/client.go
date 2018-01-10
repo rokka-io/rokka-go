@@ -52,7 +52,7 @@ func DefaultConfig() *Config {
 		APIAddress: "https://api.rokka.io",
 		APIVersion: "1",
 		APIKey:     "",
-		ImageHost:  "https://{{organization}}.rokka.io/",
+		ImageHost:  "https://{{organization}}.rokka.io",
 		HTTPClient: &http.Client{},
 	}
 }
