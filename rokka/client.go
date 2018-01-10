@@ -30,6 +30,7 @@ type Config struct {
 	APIAddress string
 	APIVersion string
 	APIKey     string
+	ImageHost  string
 	Verbose    bool
 	HTTPClient HTTPRequester
 }
@@ -51,6 +52,7 @@ func DefaultConfig() *Config {
 		APIAddress: "https://api.rokka.io",
 		APIVersion: "1",
 		APIKey:     "",
+		ImageHost:  "https://{{organization}}.rokka.io/",
 		HTTPClient: &http.Client{},
 	}
 }
@@ -69,6 +71,10 @@ func NewClient(config *Config) (c *Client) {
 
 	if len(config.APIKey) == 0 {
 		config.APIKey = defConfig.APIKey
+	}
+
+	if len(config.ImageHost) == 0 {
+		config.ImageHost = defConfig.ImageHost
 	}
 
 	if config.HTTPClient == nil {

@@ -16,6 +16,10 @@ $ go get github.com/rokka-io/rokka-go/cmd/rokka
 $ go get github.com/rokka-io/rokka-go/rokka
 ```
 
+## Dependencies
+
+This project uses [dep](https://github.com/golang/dep). Run `dep ensure` for dependencies.
+
 ## Development
 
 ```sh
