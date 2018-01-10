@@ -1,4 +1,4 @@
-// This program generates rokka/operations_objects.go
+// This program generates rokka/operations_structs.go
 package main
 
 import (
@@ -20,9 +20,15 @@ type operationProperty struct {
 	Type string
 }
 
+type operationProperties []operationProperty
+
+func (o operationProperties) Len() int           { return len(o) }
+func (o operationProperties) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o operationProperties) Less(i, j int) bool { return o[i].Name < o[j].Name }
+
 type operation struct {
 	Name       string
-	Properties []operationProperty
+	Properties operationProperties
 	Required   []string
 	OneOf      []string
 }
@@ -64,7 +70,7 @@ func main() {
 
 	ops := make(operations, 0)
 	for name, value := range res {
-		properties := make([]operationProperty, 0)
+		properties := make(operationProperties, 0)
 		if propertiesMap, ok := value["properties"].(map[string]interface{}); ok {
 			for propName, propValue := range propertiesMap {
 				propValueMap := propValue.(map[string]interface{})
@@ -75,6 +81,7 @@ func main() {
 				properties = append(properties, p)
 			}
 		}
+		sort.Sort(properties)
 		var required, oneOf []string
 		if list, ok := value["required"]; ok {
 			required = toStringSlice(list.([]interface{}))
@@ -182,7 +189,7 @@ type Operation interface {
 		options := make([]string, 0)
 		{{ range .Properties -}}
 			if o.{{ titleCamelCase .Name }} != nil {
-			  options = append(options, fmt.Sprintf("%s", *o.{{ titleCamelCase .Name }}))
+			  options = append(options, fmt.Sprintf("%s-%v", "{{ .Name }}", *o.{{ titleCamelCase .Name }}))
 			}
 		{{ end }}
 		if len(options) == 0 {
