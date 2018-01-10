@@ -22,21 +22,21 @@ type operationProperty struct {
 
 type operationProperties []operationProperty
 
-func (o operationProperties) Len() int           { return len(o) }
-func (o operationProperties) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o operationProperties) Len() int	   { return len(o) }
+func (o operationProperties) Swap(i, j int)	  { o[i], o[j] = o[j], o[i] }
 func (o operationProperties) Less(i, j int) bool { return o[i].Name < o[j].Name }
 
 type operation struct {
-	Name       string
+	Name	   string
 	Properties operationProperties
 	Required   []string
-	OneOf      []string
+	OneOf	  []string
 }
 
 type operations []operation
 
-func (o operations) Len() int           { return len(o) }
-func (o operations) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o operations) Len() int	   { return len(o) }
+func (o operations) Swap(i, j int)	  { o[i], o[j] = o[j], o[i] }
 func (o operations) Less(i, j int) bool { return o[i].Name < o[j].Name }
 
 var typeMap = map[string]string{
@@ -121,7 +121,7 @@ func main() {
 }
 
 var funcMap = template.FuncMap{
-	"title":          strings.Title,
+	"title":	  strings.Title,
 	"titleCamelCase": func(s string) string { return strings.Title(camelcase.Camelcase(s)) },
 }
 
@@ -138,12 +138,12 @@ import (
 
 // Operation is an interface all operation structs implement.
 type Operation interface {
-    // Name returns the operation's name known by the API.
+	// Name returns the operation's name known by the API.
 	Name() string
-    // Validate checks if required properties are set.
-    // Otherwise it returns false with an error indicating the missing property.
+	// Validate checks if required properties are set.
+	// Otherwise it returns false with an error indicating the missing property.
 	Validate() (bool, error)
-    // toURLPath generates a part of the URL used for dynamic rendering of a stack.
+	// toURLPath generates a part of the URL used for dynamic rendering of a stack.
 	toURLPath() string
 }
 
@@ -154,14 +154,14 @@ type Operation interface {
 	{{- end }}
 	//
 	// See: https://rokka.io/documentation/references/operations.html
-    type {{ title .Name }}Operation struct {
-		{{ range .Properties -}}
-          {{ titleCamelCase .Name }} *{{ .Type }}
-        {{ end }}
-    }
+	type {{ title .Name }}Operation struct {
+	{{ range .Properties -}}
+		{{ titleCamelCase .Name }} *{{ .Type }}
+	{{ end }}
+	}
 
 	// Name implements rokka.Operation.Name
-    func (o {{ title .Name }}Operation) Name() string { return "{{ .Name }}" }
+	func (o {{ title .Name }}Operation) Name() string { return "{{ .Name }}" }
 
 	// Validate implements rokka.Operation.Validate.
 	func (o {{ title .Name }}Operation) Validate() (bool, error) {
@@ -184,7 +184,7 @@ type Operation interface {
 		return true, nil
 	}
 
-    // toURLPath implements rokka.Operation.toURLPath.
+	// toURLPath implements rokka.Operation.toURLPath.
 	func (o {{ title .Name }}Operation) toURLPath() string {
 		options := make([]string, 0)
 		{{ range .Properties -}}
@@ -193,9 +193,9 @@ type Operation interface {
 			}
 		{{ end }}
 		if len(options) == 0 {
-            return o.Name()
+			return o.Name()
 		}
 		return fmt.Sprintf("%s-%s", o.Name(), strings.Join(options, "-"))
-    }
+	}
 {{- end }}
 `))

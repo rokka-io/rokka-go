@@ -16,8 +16,6 @@ func TestGetURLWithoutStackOperations(t *testing.T) {
 	if url != expectedURL {
 		t.Errorf("Result doesn't match expected value. Got: \"%s\"; Expected: \"%s\"", url, expectedURL)
 	}
-
-	t.Log(url)
 }
 
 func TestGetURLWithValidStackOperations(t *testing.T) {
@@ -36,8 +34,20 @@ func TestGetURLWithValidStackOperations(t *testing.T) {
 	if url != expectedURL {
 		t.Errorf("Result doesn't match expected value. Got: \"%s\"; Expected: \"%s\"", url, expectedURL)
 	}
+}
 
-	t.Log(url)
+func TestGetURLWithCustomImageHost(t *testing.T) {
+	expectedURL := "https://test.example.com/dynamic/noop/8bbff49a384a4682fd05144ffe77a84f29f112ff.png"
+	operations := []Operation{}
+
+	c := NewClient(&Config{ImageHost: "https://{{organization}}.example.com"})
+	url, err := c.GetURL("test", "8bbff49a384a4682fd05144ffe77a84f29f112ff", "png", operations)
+	if err != nil {
+		t.Error(err)
+	}
+	if url != expectedURL {
+		t.Errorf("Result doesn't match expected value. Got: \"%s\"; Expected: \"%s\"", url, expectedURL)
+	}
 }
 
 
@@ -47,11 +57,9 @@ func TestGetURLWithInvalidStackOperation(t *testing.T) {
 	}
 
 	c := NewClient(&Config{})
-	url, err := c.GetURL("test", "8bbff49a384a4682fd05144ffe77a84f29f112ff", "png", operations)
+	_, err := c.GetURL("test", "8bbff49a384a4682fd05144ffe77a84f29f112ff", "png", operations)
 	if err == nil {
 		t.Error("Error expected")
 	}
-
-	t.Log(url)
 }
 
