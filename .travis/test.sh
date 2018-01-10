@@ -3,8 +3,8 @@
 set -e
 
 # linting
-goimports -d ./
-go tool vet ./
+goimports -d $(go list -f {{.Dir}} ./... | grep -v /vendor/)
+go tool vet $(go list -f {{.Dir}} ./... | grep -v /vendor/)
 
 # testing
 go test -v ./...

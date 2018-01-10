@@ -3,13 +3,37 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+
+[[projects]]
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
+  branch = "master"
   name = "github.com/segmentio/go-camelcase"
   packages = ["."]
   revision = "7085f1e3c734f696a4cd28568c33abae3100126f"
 
+[[projects]]
+  branch = "master"
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  revision = "0c34d16c3123764e413b9ed982ada58b1c3d53ea"
+
+[[projects]]
+  name = "github.com/spf13/pflag"
+  packages = ["."]
+  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
+  version = "v1.0.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2496f556157b1d42d56f9588eab3bb114d97f7881ee66c130245e81611700d0b"
+  inputs-digest = "8ae1daaf58ef27b340b03ad434161491bf507d568d75de3f5b3f8332786434d2"
   solver-name = "gps-cdcl"
   solver-version = 1

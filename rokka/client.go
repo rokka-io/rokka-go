@@ -7,7 +7,21 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
+
+var errorAPIKeyMissing = errors.New("API key must be set")
+
+// AnnotatedUnmarshalTypeError is a wrapper for json.UnmarshalTypeError adding the offending JSON body around the offset.
+type AnnotatedUnmarshalTypeError struct {
+	*json.UnmarshalTypeError
+	Content string
+}
+
+// Error returns the same error as UnmarshalTypeError.
+func (a *AnnotatedUnmarshalTypeError) Error() string {
+	return a.UnmarshalTypeError.Error()
+}
 
 // Client used to communicate with the rokka API.
 type Client struct {
@@ -35,15 +49,28 @@ type Config struct {
 	HTTPClient HTTPRequester
 }
 
+// APIError is returned by the API in case of errors.
+type APIError struct {
+	Error struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
 // StatusCodeError satifies the Error interface and is returned when a response contains a status code >= 400.
 type StatusCodeError struct {
-	StatusCode int
-	Body       []byte
+	Code     int
+	APIError *APIError
+	Body     []byte
 }
 
 // Error creates an error string.
 func (e StatusCodeError) Error() string {
-	return fmt.Sprintf("rokka: Status Code %d", e.StatusCode)
+	s := fmt.Sprintf("rokka: Status Code %d", e.Code)
+	if e.APIError != nil {
+		s += fmt.Sprintf(" (%s)", e.APIError.Error.Message)
+	}
+	return s
 }
 
 // DefaultConfig is used when calling NewClient with not all config options set.
@@ -111,28 +138,37 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 		return err
 	}
 	if resp.StatusCode >= 400 {
-		return StatusCodeError{
-			resp.StatusCode,
-			body,
+		rErr := APIError{}
+		sErr := StatusCodeError{
+			Code: resp.StatusCode,
+			Body: body,
+		}
+		if err := json.Unmarshal(body, &rErr); err != nil {
+			return sErr
+		}
+		sErr.APIError = &rErr
+		return sErr
+	}
+	if err := json.Unmarshal(body, &v); err != nil {
+		switch err := err.(type) {
+		case *json.UnmarshalTypeError:
+			return &AnnotatedUnmarshalTypeError{
+				UnmarshalTypeError: err,
+				Content:            fmt.Sprintf("%s\n<-->\n%s", body[err.Offset-100:err.Offset], body[err.Offset:err.Offset+100]),
+			}
+		default:
+			return err
 		}
 	}
-	// handle empty responses
-	if len(body) == 0 {
-		return nil
-	}
-	return json.Unmarshal(body, &v)
+	return nil
 }
 
 // NewRequest constructs a new http.Request used for executing using Call.
-func (c *Client) NewRequest(method, path string, body io.Reader, query map[string]string) (*http.Request, error) {
+func (c *Client) NewRequest(method, path string, body io.Reader, query url.Values) (*http.Request, error) {
 	req, err := http.NewRequest(method, c.config.APIAddress+path, body)
 
-	if query != nil {
-		q := req.URL.Query()
-		for k, v := range query {
-			q.Add(k, v)
-		}
-		req.URL.RawQuery = q.Encode()
+	if len(query) > 0 {
+		req.URL.RawQuery = query.Encode()
 	}
 
 	return req, err
@@ -142,7 +178,7 @@ func (c *Client) NewRequest(method, path string, body io.Reader, query map[strin
 // This function only returns true if there has been no error and the status code is < 400.
 func (c *Client) ValidAPIKey() (bool, error) {
 	if len(c.config.APIKey) == 0 {
-		return false, errors.New("API key must be set")
+		return false, errorAPIKeyMissing
 	}
 
 	req, err := c.NewRequest(http.MethodGet, "/", nil, nil)
@@ -152,7 +188,7 @@ func (c *Client) ValidAPIKey() (bool, error) {
 	err = c.Call(req, nil)
 	if err != nil {
 		// only 403 is an expected error code, just return false without the error in this case.
-		if err, ok := err.(StatusCodeError); ok && err.StatusCode == http.StatusForbidden {
+		if err, ok := err.(StatusCodeError); ok && err.Code == http.StatusForbidden {
 			return false, nil
 		}
 		return false, err
