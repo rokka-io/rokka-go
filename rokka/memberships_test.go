@@ -15,7 +15,7 @@ func TestCreateMembership(t *testing.T) {
 
 	err := c.CreateMembership("test", "test@example.org", RoleAdmin)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	t.Log("Successfully created membership")
