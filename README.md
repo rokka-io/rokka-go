@@ -8,6 +8,8 @@
 
 ## Install
 
+Go 1.7 is required.
+
 ```sh
 # Install CLI
 $ go get github.com/rokka-io/rokka-go/cmd/rokka

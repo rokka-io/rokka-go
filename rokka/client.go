@@ -143,11 +143,17 @@ func (c *Client) Call(req *http.Request, v interface{}) error {
 			Code: resp.StatusCode,
 			Body: body,
 		}
+		if len(body) == 0 {
+			return sErr
+		}
 		if err := json.Unmarshal(body, &rErr); err != nil {
 			return sErr
 		}
 		sErr.APIError = &rErr
 		return sErr
+	}
+	if len(body) == 0 {
+		return nil
 	}
 	if err := json.Unmarshal(body, &v); err != nil {
 		switch err := err.(type) {
