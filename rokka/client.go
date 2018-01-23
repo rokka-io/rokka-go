@@ -73,7 +73,7 @@ func (e StatusCodeError) Error() string {
 	return s
 }
 
-type responseHandler func(resp *http.Response, v interface{}) error
+type responseHandler func(resp *http.Response, body []byte, v interface{}) error
 
 // DefaultConfig is used when calling NewClient with not all config options set.
 func DefaultConfig() *Config {
@@ -146,9 +146,6 @@ func handleUnmarshalError(err error, body []byte) error {
 // Call executes an HTTP request.
 // It automatically adds the Api-Version and Api-Key headers to the request.
 // If the response contains a status code >= 400 a StatusCodeError is returned.
-//
-// If no responseHandler is provided, a JSON response is assumed and parsed. In all other cases
-// the caller is responsible for closing response body.
 func (c *Client) Call(req *http.Request, v interface{}, rh responseHandler) error {
 	req.Header.Add("Api-Version", c.config.APIVersion)
 	req.Header.Add("Accept", "application/json")
@@ -165,11 +162,6 @@ func (c *Client) Call(req *http.Request, v interface{}, rh responseHandler) erro
 	if err != nil {
 		return err
 	}
-
-	return rh(resp, v)
-}
-
-func jsonResponseHandler(resp *http.Response, v interface{}) error {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -179,6 +171,10 @@ func jsonResponseHandler(resp *http.Response, v interface{}) error {
 	if resp.StatusCode >= 400 {
 		return handleStatusCodeError(resp, body)
 	}
+	return rh(resp, body, v)
+}
+
+func jsonResponseHandler(resp *http.Response, body []byte, v interface{}) error {
 	if len(body) == 0 {
 		return nil
 	}
@@ -188,8 +184,8 @@ func jsonResponseHandler(resp *http.Response, v interface{}) error {
 	return nil
 }
 
-// callJSONResponse is using Client.Call and automatically converts the response to JSON.
-func (c *Client) callJSONResponse(req *http.Request, v interface{}) error {
+// CallJSONResponse is using Client.Call and automatically converts the response to JSON.
+func (c *Client) CallJSONResponse(req *http.Request, v interface{}) error {
 	return c.Call(req, v, jsonResponseHandler)
 }
 
@@ -215,7 +211,7 @@ func (c *Client) ValidAPIKey() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	err = c.callJSONResponse(req, nil)
+	err = c.CallJSONResponse(req, nil)
 	if err != nil {
 		// only 403 is an expected error code, just return false without the error in this case.
 		if err, ok := err.(StatusCodeError); ok && err.Code == http.StatusForbidden {

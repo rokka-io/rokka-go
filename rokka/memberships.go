@@ -35,5 +35,5 @@ func (c *Client) CreateMembership(org, email string, role MembershipRole) error 
 		return err
 	}
 
-	return c.callJSONResponse(req, nil)
+	return c.CallJSONResponse(req, nil)
 }

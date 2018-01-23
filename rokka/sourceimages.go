@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -99,7 +98,7 @@ func (c *Client) ListSourceImages(org string, options ListSourceImagesOptions) (
 		return result, err
 	}
 
-	err = c.callJSONResponse(req, &result)
+	err = c.CallJSONResponse(req, &result)
 
 	return result, err
 }
@@ -115,7 +114,7 @@ func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error
 		return result, err
 	}
 
-	err = c.callJSONResponse(req, &result)
+	err = c.CallJSONResponse(req, &result)
 
 	return result, err
 }
@@ -172,24 +171,18 @@ func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader,
 	}
 
 	req.Header.Add("Content-Type", w.FormDataContentType())
-	err = c.callJSONResponse(req, &result)
+	err = c.CallJSONResponse(req, &result)
 
 	return result, err
 }
 
 // dynamicMetadataResponseHandler is a responseHandler reading the Location header from the successful response.
-func dynamicMetadataResponseHandler(resp *http.Response, v interface{}) error {
+func dynamicMetadataResponseHandler(resp *http.Response, body []byte, v interface{}) error {
 	if resp.StatusCode == 204 {
 		v := v.(*AddDynamicMetadataResponse)
 		v.Location = resp.Header.Get("Location")
-
 		return nil
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
 	return handleStatusCodeError(resp, body)
 }

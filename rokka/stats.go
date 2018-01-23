@@ -43,6 +43,6 @@ func (c *Client) GetStats(org string, options GetStatsOptions) (StatsResponse, e
 		return result, err
 	}
 
-	err = c.callJSONResponse(req, &result)
+	err = c.CallJSONResponse(req, &result)
 	return result, err
 }

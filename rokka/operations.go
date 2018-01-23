@@ -18,6 +18,6 @@ func (c *Client) GetOperations() (OperationsResponse, error) {
 		return result, err
 	}
 
-	err = c.callJSONResponse(req, &result)
+	err = c.CallJSONResponse(req, &result)
 	return result, err
 }
