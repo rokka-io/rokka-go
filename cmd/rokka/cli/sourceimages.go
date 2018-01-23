@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +11,7 @@ import (
 )
 
 var sourceImagesListOptions rokka.ListSourceImagesOptions
+var addDynamicMetadataOptions rokka.AddDynamicMetadataOptions
 
 func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 	return c.ListSourceImages(args[0], sourceImagesListOptions)
@@ -31,6 +33,11 @@ func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	defer file.Close()
 
 	return c.CreateSourceImage(args[0], path.Base(args[1]), file)
+}
+
+func addDynamicMetadata(c *rokka.Client, args []string) (interface{}, error) {
+	b := bytes.NewBufferString(args[3])
+	return c.AddDynamicMetadata(args[0], args[1], args[2], b, addDynamicMetadataOptions)
 }
 
 // sourceImagesCmd represents the sourceImages command
@@ -71,12 +78,23 @@ var sourceImagesCreateCmd = &cobra.Command{
 	Run: run(createSourceImage, fmt.Sprintf("{{range .Items}}%s{{end}}", sourceImageTemplate)),
 }
 
+var sourceImagesAddDynamicMetadataCmd = &cobra.Command{
+	Use:   "add-dynamic-metadata [org] [hash] [name] [json]",
+	Short: "Add dynamic metadata",
+	Long: `Adding dynamic metadata generates a new image and returns the location of the new image.
+If the deletePrevious flag is supplied, the previous image will be deleted.`,
+	Args: cobra.ExactArgs(4),
+	DisableFlagsInUseLine: true,
+	Run: run(addDynamicMetadata, "Location:\t{{.Location}}"),
+}
+
 func init() {
 	rootCmd.AddCommand(sourceImagesCmd)
 
 	sourceImagesCmd.AddCommand(sourceImagesListCmd)
 	sourceImagesCmd.AddCommand(sourceImagesGetCmd)
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
+	sourceImagesCmd.AddCommand(sourceImagesAddDynamicMetadataCmd)
 
 	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Limit, "limit", "l", 20, "Limit")
 	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Offset, "offset", "o", 0, "Offset")
@@ -87,4 +105,6 @@ func init() {
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Width, "width", "", "Width")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
+
+	sourceImagesAddDynamicMetadataCmd.Flags().BoolVar(&addDynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
 }

@@ -37,6 +37,6 @@ func (c *Client) CreateUser(org, email string) (CreateUserResponse, error) {
 		return result, err
 	}
 
-	err = c.Call(req, &result)
+	err = c.CallJSONResponse(req, &result)
 	return result, err
 }
