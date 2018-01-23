@@ -72,13 +72,13 @@ type CreateSourceImageResponse struct {
 	Items []GetSourceImageResponse `json:"items"`
 }
 
-// AddDynamicMetadataOptions defines the accepted options for adding dynamic metadata to an image.
-type AddDynamicMetadataOptions struct {
+// DynamicMetadataOptions defines the accepted options for adding dynamic metadata to an image.
+type DynamicMetadataOptions struct {
 	DeletePrevious bool `url:"deletePrevious,omitempty"`
 }
 
-// AddDynamicMetadataResponse contains the location of the updated image.
-type AddDynamicMetadataResponse struct {
+// DynamicMetadataResponse contains the location of the updated image.
+type DynamicMetadataResponse struct {
 	Location string
 }
 
@@ -178,8 +178,8 @@ func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader,
 
 // dynamicMetadataResponseHandler is a responseHandler reading the Location header from the successful response.
 func dynamicMetadataResponseHandler(resp *http.Response, body []byte, v interface{}) error {
-	if resp.StatusCode == 204 {
-		v := v.(*AddDynamicMetadataResponse)
+	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusCreated {
+		v := v.(*DynamicMetadataResponse)
 		v.Location = resp.Header.Get("Location")
 		return nil
 	}
@@ -192,8 +192,8 @@ func dynamicMetadataResponseHandler(resp *http.Response, body []byte, v interfac
 // If deletePrevious is true, the previous image will be deleted.
 //
 // See: https://rokka.io/documentation/references/dynamic-metadata.html
-func (c *Client) AddDynamicMetadata(org, hash, name string, data io.Reader, options AddDynamicMetadataOptions) (AddDynamicMetadataResponse, error) {
-	result := AddDynamicMetadataResponse{}
+func (c *Client) AddDynamicMetadata(org, hash, name string, data io.Reader, options DynamicMetadataOptions) (DynamicMetadataResponse, error) {
+	result := DynamicMetadataResponse{}
 
 	qs, err := query.Values(options)
 	if err != nil {
@@ -201,6 +201,28 @@ func (c *Client) AddDynamicMetadata(org, hash, name string, data io.Reader, opti
 	}
 
 	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, name), data, qs)
+	if err != nil {
+		return result, err
+	}
+
+	err = c.Call(req, &result, dynamicMetadataResponseHandler)
+	return result, err
+}
+
+// DeleteDynamicMetadata updates a source image by deleting existing metadata.
+// Rokka generates a new image hash when calling this function. The return value of this call contains the location of the new image.
+// If deletePrevious is true, the previous image will be deleted.
+//
+// See: https://rokka.io/documentation/references/dynamic-metadata.html
+func (c *Client) DeleteDynamicMetadata(org, hash, name string, options DynamicMetadataOptions) (DynamicMetadataResponse, error) {
+	result := DynamicMetadataResponse{}
+
+	qs, err := query.Values(options)
+	if err != nil {
+		return result, err
+	}
+
+	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, name), nil, qs)
 	if err != nil {
 		return result, err
 	}
