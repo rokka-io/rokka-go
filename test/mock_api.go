@@ -14,8 +14,8 @@ func NewMockAPI(file string, statusCode int) *httptest.Server {
 		if err != nil {
 			log.Fatal(err)
 		}
-		w.WriteHeader(statusCode)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(statusCode)
 		w.Write(json)
 	}))
 

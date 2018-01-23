@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -35,7 +36,8 @@ func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 }
 
 func addDynamicMetadata(c *rokka.Client, args []string) (interface{}, error) {
-	return c.AddDynamicMetadata(args[0], args[1], args[2], args[3], addDynamicMetadataOptions)
+	b := bytes.NewBufferString(args[3])
+	return c.AddDynamicMetadata(args[0], args[1], args[2], b, addDynamicMetadataOptions)
 }
 
 // sourceImagesCmd represents the sourceImages command

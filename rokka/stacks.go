@@ -30,6 +30,6 @@ func (c *Client) ListStacks(org string) (ListStacksResponse, error) {
 		return result, err
 	}
 
-	err = c.Call(req, &result)
+	err = c.callJSONResponse(req, &result)
 	return result, err
 }

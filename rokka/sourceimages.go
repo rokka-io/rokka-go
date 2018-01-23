@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -98,7 +99,7 @@ func (c *Client) ListSourceImages(org string, options ListSourceImagesOptions) (
 		return result, err
 	}
 
-	err = c.Call(req, &result)
+	err = c.callJSONResponse(req, &result)
 
 	return result, err
 }
@@ -114,7 +115,7 @@ func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error
 		return result, err
 	}
 
-	err = c.Call(req, &result)
+	err = c.callJSONResponse(req, &result)
 
 	return result, err
 }
@@ -171,25 +172,26 @@ func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader,
 	}
 
 	req.Header.Add("Content-Type", w.FormDataContentType())
-	err = c.Call(req, &result)
+	err = c.callJSONResponse(req, &result)
 
 	return result, err
 }
 
-func dynamicMetadataResponseHandler(v interface{}, resp *http.Response) error {
+// dynamicMetadataResponseHandler is a responseHandler reading the Location header from the successful response.
+func dynamicMetadataResponseHandler(resp *http.Response, v interface{}) error {
 	if resp.StatusCode == 204 {
-		dynamicMetadataResponse, ok := v.(*AddDynamicMetadataResponse)
+		v := v.(*AddDynamicMetadataResponse)
+		v.Location = resp.Header.Get("Location")
 
-		if ok {
-			dynamicMetadataResponse.Location = resp.Header.Get("Location")
-
-			return nil
-		}
+		return nil
 	}
-
-	return StatusCodeError{
-		Code: resp.StatusCode,
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
 	}
+	defer resp.Body.Close()
+
+	return handleStatusCodeError(resp, body)
 }
 
 // AddDynamicMetadata updates a source image by adding arbitrary metadata.
@@ -197,23 +199,19 @@ func dynamicMetadataResponseHandler(v interface{}, resp *http.Response) error {
 // If deletePrevious is true, the previous image will be deleted.
 //
 // See: https://rokka.io/documentation/references/dynamic-metadata.html
-func (c *Client) AddDynamicMetadata(org, hash, name, jsonBody string, options AddDynamicMetadataOptions) (AddDynamicMetadataResponse, error) {
+func (c *Client) AddDynamicMetadata(org, hash, name string, data io.Reader, options AddDynamicMetadataOptions) (AddDynamicMetadataResponse, error) {
 	result := AddDynamicMetadataResponse{}
-
-	b := bytes.NewBuffer([]byte(jsonBody))
 
 	qs, err := query.Values(options)
 	if err != nil {
 		return result, err
 	}
 
-	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, name), b, qs)
-
+	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, name), data, qs)
 	if err != nil {
 		return result, err
 	}
 
-	err = c.CallWithCustomRH(req, &result, dynamicMetadataResponseHandler)
-
+	err = c.Call(req, &result, dynamicMetadataResponseHandler)
 	return result, err
 }

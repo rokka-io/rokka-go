@@ -73,7 +73,7 @@ func (e StatusCodeError) Error() string {
 	return s
 }
 
-type rh func(interface{}, *http.Response) error
+type responseHandler func(resp *http.Response, v interface{}) error
 
 // DefaultConfig is used when calling NewClient with not all config options set.
 func DefaultConfig() *Config {
@@ -115,10 +115,41 @@ func NewClient(config *Config) (c *Client) {
 	}
 }
 
-// CallWithCustomRH executes an HTTP request.
+func handleStatusCodeError(resp *http.Response, body []byte) error {
+	rErr := APIError{}
+	sErr := StatusCodeError{
+		Code: resp.StatusCode,
+		Body: body,
+	}
+	if len(body) == 0 {
+		return sErr
+	}
+	if err := json.Unmarshal(body, &rErr); err != nil {
+		return sErr
+	}
+	sErr.APIError = &rErr
+	return sErr
+}
+
+func handleUnmarshalError(err error, body []byte) error {
+	switch err := err.(type) {
+	case *json.UnmarshalTypeError:
+		return &AnnotatedUnmarshalTypeError{
+			UnmarshalTypeError: err,
+			Content:            fmt.Sprintf("%s\n<-->\n%s", body[err.Offset-100:err.Offset], body[err.Offset:err.Offset+100]),
+		}
+	default:
+		return err
+	}
+}
+
+// Call executes an HTTP request.
 // It automatically adds the Api-Version and Api-Key headers to the request.
 // If the response contains a status code >= 400 a StatusCodeError is returned.
-func (c *Client) CallWithCustomRH(req *http.Request, v interface{}, responseHandler rh) error {
+//
+// If no responseHandler is provided, a JSON response is assumed and parsed. In all other cases
+// the caller is responsible for closing response body.
+func (c *Client) Call(req *http.Request, v interface{}, rh responseHandler) error {
 	req.Header.Add("Api-Version", c.config.APIVersion)
 	req.Header.Add("Accept", "application/json")
 
@@ -134,50 +165,32 @@ func (c *Client) CallWithCustomRH(req *http.Request, v interface{}, responseHand
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	if responseHandler != nil {
-		return responseHandler(v, resp)
-	}
+	return rh(resp, v)
+}
 
+func jsonResponseHandler(resp *http.Response, v interface{}) error {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
-		rErr := APIError{}
-		sErr := StatusCodeError{
-			Code: resp.StatusCode,
-			Body: body,
-		}
-		if len(body) == 0 {
-			return sErr
-		}
-		if err := json.Unmarshal(body, &rErr); err != nil {
-			return sErr
-		}
-		sErr.APIError = &rErr
-		return sErr
+		return handleStatusCodeError(resp, body)
 	}
 	if len(body) == 0 {
 		return nil
 	}
 	if err := json.Unmarshal(body, &v); err != nil {
-		switch err := err.(type) {
-		case *json.UnmarshalTypeError:
-			return &AnnotatedUnmarshalTypeError{
-				UnmarshalTypeError: err,
-				Content:            fmt.Sprintf("%s\n<-->\n%s", body[err.Offset-100:err.Offset], body[err.Offset:err.Offset+100]),
-			}
-		default:
-			return err
-		}
+		return handleUnmarshalError(err, body)
 	}
 	return nil
 }
 
-func (c *Client) Call(req *http.Request, v interface{}) error {
-	return c.CallWithCustomRH(req, v, nil)
+// callJSONResponse is using Client.Call and automatically converts the response to JSON.
+func (c *Client) callJSONResponse(req *http.Request, v interface{}) error {
+	return c.Call(req, v, jsonResponseHandler)
 }
 
 // NewRequest constructs a new http.Request used for executing using Call.
@@ -202,7 +215,7 @@ func (c *Client) ValidAPIKey() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	err = c.Call(req, nil)
+	err = c.callJSONResponse(req, nil)
 	if err != nil {
 		// only 403 is an expected error code, just return false without the error in this case.
 		if err, ok := err.(StatusCodeError); ok && err.Code == http.StatusForbidden {
