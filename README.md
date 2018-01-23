@@ -8,7 +8,7 @@
 
 ## Install
 
-Go 1.7 is required.
+Go >=1.7 is required.
 
 ```sh
 # Install CLI
