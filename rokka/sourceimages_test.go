@@ -108,6 +108,27 @@ func TestAddDynamicMetadata(t *testing.T) {
 	loc := "https://api.example.org/test/1234-2"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Location", loc)
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte{})
+	}))
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	res, err := c.AddDynamicMetadata("test", "1234", "test-name", bytes.NewBufferString("{\"test\": \"testing\""), DynamicMetadataOptions{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res.Location != loc {
+		t.Errorf("Expected location to be parsed in response, want: '%s', got: '%s'", loc, res.Location)
+	}
+}
+
+func TestDeleteDynamicMetadata(t *testing.T) {
+	loc := "https://api.example.org/test/1234-2"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", loc)
 		w.WriteHeader(http.StatusNoContent)
 		w.Write([]byte{})
 	}))
@@ -115,7 +136,7 @@ func TestAddDynamicMetadata(t *testing.T) {
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.AddDynamicMetadata("test", "1234", "test-name", bytes.NewBufferString("{\"test\": \"testing\""), AddDynamicMetadataOptions{})
+	res, err := c.DeleteDynamicMetadata("test", "1234", "test-name", DynamicMetadataOptions{})
 	if err != nil {
 		t.Error(err)
 	}

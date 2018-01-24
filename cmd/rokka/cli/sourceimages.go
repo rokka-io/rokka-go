@@ -11,7 +11,7 @@ import (
 )
 
 var sourceImagesListOptions rokka.ListSourceImagesOptions
-var addDynamicMetadataOptions rokka.AddDynamicMetadataOptions
+var dynamicMetadataOptions rokka.DynamicMetadataOptions
 
 func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 	return c.ListSourceImages(args[0], sourceImagesListOptions)
@@ -37,7 +37,11 @@ func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 func addDynamicMetadata(c *rokka.Client, args []string) (interface{}, error) {
 	b := bytes.NewBufferString(args[3])
-	return c.AddDynamicMetadata(args[0], args[1], args[2], b, addDynamicMetadataOptions)
+	return c.AddDynamicMetadata(args[0], args[1], args[2], b, dynamicMetadataOptions)
+}
+
+func deleteDynamicMetadata(c *rokka.Client, args []string) (interface{}, error) {
+	return c.DeleteDynamicMetadata(args[0], args[1], args[2], dynamicMetadataOptions)
 }
 
 // sourceImagesCmd represents the sourceImages command
@@ -78,14 +82,34 @@ var sourceImagesCreateCmd = &cobra.Command{
 	Run: run(createSourceImage, fmt.Sprintf("{{range .Items}}%s{{end}}", sourceImageTemplate)),
 }
 
+var sourceImagesDynamicMetadataCmd = &cobra.Command{
+	Use:                   "dynamic-metadata",
+	Short:                 "Add or remove dynamic metadata on a source image",
+	Run:                   nil,
+	Aliases:               []string{"dm"},
+	DisableFlagsInUseLine: true,
+}
+
 var sourceImagesAddDynamicMetadataCmd = &cobra.Command{
-	Use:   "add-dynamic-metadata [org] [hash] [name] [json]",
+	Use:   "add [org] [hash] [name] [json]",
 	Short: "Add dynamic metadata",
 	Long: `Adding dynamic metadata generates a new image and returns the location of the new image.
 If the deletePrevious flag is supplied, the previous image will be deleted.`,
-	Args: cobra.ExactArgs(4),
+	Args:                  cobra.ExactArgs(4),
+	Aliases:               []string{"a"},
 	DisableFlagsInUseLine: true,
-	Run: run(addDynamicMetadata, "Location:\t{{.Location}}"),
+	Run: run(addDynamicMetadata, "Location: {{.Location}}"),
+}
+
+var sourceImagesDeleteDynamicMetadataCmd = &cobra.Command{
+	Use:   "delete [org] [hash] [name]",
+	Short: "Delete dynamic metadata",
+	Long: `Deleting dynamic metadata generates a new image and returns the location of the new image.
+If the deletePrevious flag is supplied, the previous image will be deleted.`,
+	Args:                  cobra.ExactArgs(3),
+	Aliases:               []string{"d"},
+	DisableFlagsInUseLine: true,
+	Run: run(deleteDynamicMetadata, "Location: {{.Location}}"),
 }
 
 func init() {
@@ -94,7 +118,10 @@ func init() {
 	sourceImagesCmd.AddCommand(sourceImagesListCmd)
 	sourceImagesCmd.AddCommand(sourceImagesGetCmd)
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
-	sourceImagesCmd.AddCommand(sourceImagesAddDynamicMetadataCmd)
+
+	sourceImagesCmd.AddCommand(sourceImagesDynamicMetadataCmd)
+	sourceImagesDynamicMetadataCmd.AddCommand(sourceImagesAddDynamicMetadataCmd)
+	sourceImagesDynamicMetadataCmd.AddCommand(sourceImagesDeleteDynamicMetadataCmd)
 
 	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Limit, "limit", "l", 20, "Limit")
 	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Offset, "offset", "o", 0, "Offset")
@@ -106,5 +133,6 @@ func init() {
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
 
-	sourceImagesAddDynamicMetadataCmd.Flags().BoolVar(&addDynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
+	sourceImagesAddDynamicMetadataCmd.Flags().BoolVar(&dynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
+	sourceImagesDeleteDynamicMetadataCmd.Flags().BoolVar(&dynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
 }
