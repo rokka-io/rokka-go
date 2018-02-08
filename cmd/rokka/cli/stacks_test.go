@@ -129,8 +129,9 @@ func TestCreateStack_CLI(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(req.Operations) != 3 {
-		t.Fatalf("Expected %d operation to be added, got %d", 1, len(req.Operations))
+	exp := 3
+	if len(req.Operations) != exp {
+		t.Fatalf("Expected %d operation to be added, got %d", exp, len(req.Operations))
 	}
 	opAlpha, ok := req.Operations[0].(*rokka.AlphaOperation)
 	if !ok {
