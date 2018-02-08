@@ -23,7 +23,7 @@ var (
 	responseTemplate string
 	configFile       string
 
-	logger Log
+	logger *cliLog
 	cl     *rokka.Client
 )
 
@@ -35,9 +35,7 @@ var rootCmd = &cobra.Command{
 	// TODO: add something helpful as a long text.
 	//Long: ``,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		logger.Verbose = verbose
-
-		hc := newHTTPClient(&logger)
+		hc := newHTTPClient(logger)
 
 		cl = rokka.NewClient(&rokka.Config{
 			APIKey:     apiKey,
@@ -57,7 +55,7 @@ func Execute() {
 }
 
 func init() {
-	logger = Log{}
+	logger = NewCLILog(verbose)
 
 	p, err := getPath()
 	if err != nil {
