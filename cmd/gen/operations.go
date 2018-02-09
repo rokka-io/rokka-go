@@ -47,14 +47,19 @@ var typeMap = map[string]string{
 }
 
 func main() {
-	c := rokka.NewClient(&rokka.Config{})
+	cfg := rokka.Config{}
+	generate(&cfg, "operations_objects.go")
+}
+
+func generate(cfg *rokka.Config, fileName string) {
+	c := rokka.NewClient(cfg)
 
 	res, err := c.GetOperations()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f, err := os.Create("operations_objects.go")
+	f, err := os.Create(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
