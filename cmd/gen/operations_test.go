@@ -46,7 +46,6 @@ func TestRunCodeGenerator(t *testing.T) {
 	generate(&rokka.Config{APIAddress: ts.URL}, f.Name())
 
 	if updateSnapshot {
-		// TODO: continue
 		os.Rename(f.Name(), snapshotFileName)
 		fmt.Println("Updated snapshot")
 		return
