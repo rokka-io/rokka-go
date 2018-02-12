@@ -35,6 +35,8 @@ var rootCmd = &cobra.Command{
 	// TODO: add something helpful as a long text.
 	//Long: ``,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		logger.Verbose = verbose
+
 		hc := newHTTPClient(logger)
 
 		cl = rokka.NewClient(&rokka.Config{
