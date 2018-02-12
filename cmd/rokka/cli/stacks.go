@@ -279,15 +279,13 @@ var stacksCmd = &cobra.Command{
 	Run: nil,
 }
 
-const stackTemplate = "{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}"
-
 var stacksListCmd = &cobra.Command{
 	Use:                   "list [org]",
 	Short:                 "List stacks of an organization",
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
-	Run: run(listStacks, fmt.Sprintf("Name\tOperations\n{{range .Items}}%s\n{{end}}", stackTemplate)),
+	Run: run(listStacks, "Name\tOperations\n{{range .Items}}{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}\n{{end}}"),
 }
 
 var stacksCreateCmd = &cobra.Command{
@@ -306,7 +304,7 @@ If the create function is executed without a pipe a manual mode allows to select
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"c"},
 	DisableFlagsInUseLine: true,
-	Run: run(createStack, stackTemplate),
+	Run: run(createStack, "Stack {{.Name}} created:\n\n{{json .}}"),
 }
 
 func init() {
