@@ -132,6 +132,7 @@ func init() {
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Width, "width", "", "Width")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
+	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Sort, "sort", "", "Sort")
 
 	sourceImagesAddDynamicMetadataCmd.Flags().BoolVar(&dynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
 	sourceImagesDeleteDynamicMetadataCmd.Flags().BoolVar(&dynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
