@@ -30,6 +30,8 @@ type ListSourceImagesOptions struct {
 	Height string `url:"height,omitempty"`
 	// Created needs to be always passed as a range.
 	Created string `url:"created,omitempty"`
+	// Sort by a specific field
+	Sort string `url:"sort,omitempty"`
 }
 
 // ListSourceImagesResponse contains a list of source images alongside a total and pagination links.
