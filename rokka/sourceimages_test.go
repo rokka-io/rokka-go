@@ -2,8 +2,8 @@ package rokka
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -11,12 +11,13 @@ import (
 )
 
 func TestListSourceImages(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/ListSourceImages.json", http.StatusOK)
+	org := "test"
+	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/ListSourceImages.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.ListSourceImages("test", ListSourceImagesOptions{})
+	res, err := c.ListSourceImages(org, ListSourceImagesOptions{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -25,12 +26,13 @@ func TestListSourceImages(t *testing.T) {
 }
 
 func TestListSourceImagesWithQueryParams(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/ListSourceImagesWithLimitAndOffset.json", http.StatusOK)
+	org := "test"
+	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/ListSourceImagesWithLimitAndOffset.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.ListSourceImages("test", ListSourceImagesOptions{
+	res, err := c.ListSourceImages(org, ListSourceImagesOptions{
 		Limit:      10,
 		Offset:     20,
 		Hash:       "73ecc577d1c51941647378f3460675b6ad7c4fff",
@@ -49,12 +51,14 @@ func TestListSourceImagesWithQueryParams(t *testing.T) {
 }
 
 func TestGetSourceImage(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/GetSourceImage.json", http.StatusOK)
+	org := "test"
+	hash := "hash"
+	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org + "/" + hash: test.Response{http.StatusOK, "./fixtures/GetSourceImage.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.GetSourceImage("test", "hash")
+	res, err := c.GetSourceImage(org, hash)
 	if err != nil {
 		t.Error(err)
 	}
@@ -63,7 +67,8 @@ func TestGetSourceImage(t *testing.T) {
 }
 
 func TestCreateSourceImage(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/CreateSourceImage.json", http.StatusOK)
+	org := "test"
+	ts := test.NewMockAPI(test.Routes{"POST /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/CreateSourceImage.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -74,7 +79,7 @@ func TestCreateSourceImage(t *testing.T) {
 	}
 	defer file.Close()
 
-	res, err := c.CreateSourceImage("test", "image", file)
+	res, err := c.CreateSourceImage(org, "image", file)
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,7 +88,8 @@ func TestCreateSourceImage(t *testing.T) {
 }
 
 func TestCreateSourceImageWithMetadata(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/CreateSourceImageWithMetadata.json", http.StatusOK)
+	org := "test"
+	ts := test.NewMockAPI(test.Routes{"POST /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/CreateSourceImageWithMetadata.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -96,7 +102,7 @@ func TestCreateSourceImageWithMetadata(t *testing.T) {
 
 	userMetadata := map[string]interface{}{"key1": "value1"}
 	dynamicMetadata := map[string]interface{}{"subject_area": map[string]int{"x": 50, "y": 50, "width": 10, "height": 10}}
-	res, err := c.CreateSourceImageWithMetadata("test", "image", file, userMetadata, dynamicMetadata)
+	res, err := c.CreateSourceImageWithMetadata(org, "image", file, userMetadata, dynamicMetadata)
 	if err != nil {
 		t.Error(err)
 	}
@@ -106,16 +112,17 @@ func TestCreateSourceImageWithMetadata(t *testing.T) {
 
 func TestAddDynamicMetadata(t *testing.T) {
 	loc := "https://api.example.org/test/1234-2"
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Location", loc)
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte{})
-	}))
+	org := "test"
+	hash := "1234"
+	metaName := "test-name"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, metaName)
+	headers := map[string]string{"Location": loc}
+	ts := test.NewMockAPI(test.Routes{"PUT " + path: test.Response{http.StatusCreated, "", headers}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.AddDynamicMetadata("test", "1234", "test-name", bytes.NewBufferString("{\"test\": \"testing\""), DynamicMetadataOptions{})
+	res, err := c.AddDynamicMetadata(org, hash, metaName, bytes.NewBufferString("{\"test\": \"testing\""), DynamicMetadataOptions{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -127,16 +134,17 @@ func TestAddDynamicMetadata(t *testing.T) {
 
 func TestDeleteDynamicMetadata(t *testing.T) {
 	loc := "https://api.example.org/test/1234-2"
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Location", loc)
-		w.WriteHeader(http.StatusNoContent)
-		w.Write([]byte{})
-	}))
+	org := "test"
+	hash := "1234"
+	metaName := "test-name"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, metaName)
+	headers := map[string]string{"Location": loc}
+	ts := test.NewMockAPI(test.Routes{"DELETE " + path: test.Response{http.StatusNoContent, "", headers}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.DeleteDynamicMetadata("test", "1234", "test-name", DynamicMetadataOptions{})
+	res, err := c.DeleteDynamicMetadata(org, hash, metaName, DynamicMetadataOptions{})
 	if err != nil {
 		t.Error(err)
 	}

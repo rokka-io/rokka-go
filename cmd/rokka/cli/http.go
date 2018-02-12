@@ -8,10 +8,10 @@ import (
 // httpClient implements rokka.HTTPRequester
 type httpClient struct {
 	c   *http.Client
-	log *Log
+	log *cliLog
 }
 
-func newHTTPClient(log *Log) *httpClient {
+func newHTTPClient(log *cliLog) *httpClient {
 	return &httpClient{
 		c:   &http.Client{},
 		log: log,

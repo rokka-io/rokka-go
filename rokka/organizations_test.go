@@ -8,12 +8,13 @@ import (
 )
 
 func TestGetOrganization(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/GetOrganization.json", http.StatusOK)
+	org := "test"
+	ts := test.NewMockAPI(test.Routes{"GET /organizations/" + org: test.Response{http.StatusOK, "./fixtures/GetOrganization.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.GetOrganization("test")
+	res, err := c.GetOrganization(org)
 	if err != nil {
 		t.Error(err)
 	}
@@ -22,12 +23,13 @@ func TestGetOrganization(t *testing.T) {
 }
 
 func TestCreateOrganization(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/CreateOrganization.json", http.StatusOK)
+	org := "test"
+	ts := test.NewMockAPI(test.Routes{"PUT /organizations/" + org: test.Response{http.StatusOK, "./fixtures/CreateOrganization.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	res, err := c.CreateOrganization("test", "info@example.com", "Dev Environment")
+	res, err := c.CreateOrganization(org, "info@example.com", "Dev Environment")
 	if err != nil {
 		t.Error(err)
 	}

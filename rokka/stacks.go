@@ -1,22 +1,42 @@
 package rokka
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
 
+// StackOptions allows to specify certain settings for a stack. Examples are the compression levels depending on the image format.
+type StackOptions map[string]interface{}
+
+// Expression allows to override certain behaviour of a stack based on e.g. DPR size of the requesting client.
+type Expression struct {
+	Expression string                 `json:"expression"`
+	Overrides  map[string]interface{} `json:"overrides"`
+}
+
+// Stack specifies the data of a stack.
+type Stack struct {
+	Organization     string       `json:"organization"`
+	Name             string       `json:"name"`
+	Created          time.Time    `json:"created"`
+	StackOptions     StackOptions `json:"stack_options"`
+	StackOperations  Operations   `json:"stack_operations"`
+	StackExpressions []Expression `json:"stack_expressions"`
+}
+
 // ListStacksResponse contains a list of stacks each containing a list of operations.
 type ListStacksResponse struct {
-	Items []struct {
-		Organization    string                 `json:"organization"`
-		Name            string                 `json:"name"`
-		Created         time.Time              `json:"created"`
-		StackOptions    map[string]interface{} `json:"stack_options"`
-		StackOperations []struct {
-			Name    string
-			Options map[string]interface{}
-		} `json:"stack_operations"`
-	} `json:"items"`
+	Items []Stack `json:"items"`
+}
+
+// CreateStackRequest specifies the stack to create.
+type CreateStackRequest struct {
+	Operations  Operations   `json:"operations"`
+	Options     StackOptions `json:"options,omitempty"`
+	Expressions []Expression `json:"expressions,omitempty"`
 }
 
 // ListStacks returns the stacks for the specified organization.
@@ -26,6 +46,28 @@ func (c *Client) ListStacks(org string) (ListStacksResponse, error) {
 	result := ListStacksResponse{}
 
 	req, err := c.NewRequest(http.MethodGet, "/stacks/"+org, nil, nil)
+	if err != nil {
+		return result, err
+	}
+
+	err = c.CallJSONResponse(req, &result)
+
+	return result, err
+}
+
+// CreateStack allows to create a new stack for the organization.
+//
+// See: https://rokka.io/documentation/references/stacks.html
+func (c *Client) CreateStack(org, name string, stack CreateStackRequest) (Stack, error) {
+	result := Stack{}
+
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(stack)
+	if err != nil {
+		return result, err
+	}
+
+	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/stacks/%s/%s", org, name), b, nil)
 	if err != nil {
 		return result, err
 	}

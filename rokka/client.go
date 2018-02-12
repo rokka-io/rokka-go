@@ -134,9 +134,18 @@ func handleStatusCodeError(resp *http.Response, body []byte) error {
 func handleUnmarshalError(err error, body []byte) error {
 	switch err := err.(type) {
 	case *json.UnmarshalTypeError:
+		start := err.Offset - 100
+		end := err.Offset + 100
+		lBody := int64(len(body))
+		if start < 0 {
+			start = 0
+		}
+		if end > lBody {
+			end = lBody
+		}
 		return &AnnotatedUnmarshalTypeError{
 			UnmarshalTypeError: err,
-			Content:            fmt.Sprintf("%s\n<-->\n%s", body[err.Offset-100:err.Offset], body[err.Offset:err.Offset+100]),
+			Content:            fmt.Sprintf("%s\n<-->\n%s", body[start:err.Offset], body[err.Offset:end]),
 		}
 	default:
 		return err

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rokka-io/rokka-go/rokka"
+	camelcase "github.com/segmentio/go-camelcase"
 	"github.com/spf13/cobra"
 )
 
@@ -35,9 +36,9 @@ func logErrorAndExit(err error) {
 }
 
 // run returns a func to execute the given func and format the return value with the given template.
-func run(fn func(c *rokka.Client, args []string) (interface{}, error), t string) func(cmd *cobra.Command, args []string) {
+func run(fn func(c *rokka.Client, args []string) (interface{}, error), tpl string) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
-		tmpl := t
+		tmpl := tpl
 		if len(responseTemplate) != 0 {
 			tmpl = responseTemplate
 		} else if raw {
@@ -63,7 +64,7 @@ func run(fn func(c *rokka.Client, args []string) (interface{}, error), t string)
 			logErrorAndExit(fmt.Errorf("error parsing response template: %s", err))
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		w := tabwriter.NewWriter(logger.StdOut, 0, 0, 2, ' ', 0)
 		err = t.Execute(w, res)
 		if err != nil {
 			logErrorAndExit(fmt.Errorf("cli: Error formatting response: %s", err))
@@ -71,6 +72,9 @@ func run(fn func(c *rokka.Client, args []string) (interface{}, error), t string)
 		w.Flush()
 	}
 }
+
+// TitleCamelCase converts a string to `camelCase`, then uses strings.Title to convert it to `CamelCase`.
+func TitleCamelCase(s string) string { return strings.Title(camelcase.Camelcase(s)) }
 
 // prettyJSON marshals JSON with an indent.
 func prettyJSON(data interface{}) (string, error) {

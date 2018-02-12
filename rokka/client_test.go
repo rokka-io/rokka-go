@@ -2,13 +2,48 @@ package rokka
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/rokka-io/rokka-go/test"
 )
 
+func TestCall_JSONError(t *testing.T) {
+	ts := test.NewMockAPI(test.Routes{"GET /": test.Response{http.StatusOK, "./fixtures/Call_JSONError.json", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL, APIKey: "test"})
+
+	req, err := c.NewRequest(http.MethodGet, "/", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	out := struct {
+		Width int `json:"width"`
+	}{}
+
+	err = c.CallJSONResponse(req, &out)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+	rErr, ok := err.(*AnnotatedUnmarshalTypeError)
+	if !ok {
+		t.Fatalf("Expected '%T', got '%T'", new(AnnotatedUnmarshalTypeError), err)
+	}
+	expectedErrStrPrefix := "json: cannot unmarshal string"
+	if !strings.HasPrefix(rErr.Error(), expectedErrStrPrefix) {
+		t.Errorf("Expected error to have prefix '%s', got '%s'", expectedErrStrPrefix, rErr.Error())
+	}
+	expectedErrContent := `{"width": "test"
+<-->
+}`
+	if rErr.Content != expectedErrContent {
+		t.Errorf("Expected error to be '%s', got '%s'", expectedErrContent, rErr.Content)
+	}
+}
+
 func TestValidAPIKey(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/GetValidAPIKey.json", http.StatusOK)
+	ts := test.NewMockAPI(test.Routes{"GET /": test.Response{http.StatusOK, "./fixtures/GetValidAPIKey.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL, APIKey: "test"})
@@ -23,8 +58,8 @@ func TestValidAPIKey(t *testing.T) {
 	}
 }
 
-func TestInvalidAPIKey(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/GetInvalidAPIKey.json", http.StatusForbidden)
+func TestValidAPIKey_InvalidKey(t *testing.T) {
+	ts := test.NewMockAPI(test.Routes{"GET /": test.Response{http.StatusForbidden, "./fixtures/GetInvalidAPIKey.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL, APIKey: "test"})

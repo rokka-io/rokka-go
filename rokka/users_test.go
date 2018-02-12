@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	ts := test.NewMockAPI("./fixtures/CreateUser.json", http.StatusOK)
+	ts := test.NewMockAPI(test.Routes{"POST /users": test.Response{http.StatusOK, "./fixtures/CreateUser.json", nil}})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "resize",
+    "options": {
+        "width": "810",
+        "upscale": false,
+        "height": "10000"
+    }
+  }
+]

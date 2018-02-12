@@ -21,9 +21,9 @@ func TestGetURLWithoutStackOperations(t *testing.T) {
 func TestGetURLWithValidStackOperations(t *testing.T) {
 	expectedURL := "https://test.rokka.io/dynamic/composition-height-200-mode-test-width-100--trim--primitive-count-10/8bbff49a384a4682fd05144ffe77a84f29f112ff.png"
 	operations := []Operation{
-		CompositionOperation{Mode: sref("test"), Width: iref(100), Height: iref(200)},
+		CompositionOperation{Mode: StrPtr("test"), Width: IntPtr(100), Height: IntPtr(200)},
 		TrimOperation{},
-		PrimitiveOperation{Count: iref(10)},
+		PrimitiveOperation{Count: IntPtr(10)},
 	}
 
 	c := NewClient(&Config{})
@@ -65,9 +65,9 @@ func TestGetURLWithInvalidStackOperation(t *testing.T) {
 func TestGetURLForStackWithValidStackOperations(t *testing.T) {
 	expectedURL := "https://test.rokka.io/stack-name/composition-height-200-mode-test-width-100--trim--primitive-count-10/8bbff49a384a4682fd05144ffe77a84f29f112ff.png"
 	operations := []Operation{
-		CompositionOperation{Mode: sref("test"), Width: iref(100), Height: iref(200)},
+		CompositionOperation{Mode: StrPtr("test"), Width: IntPtr(100), Height: IntPtr(200)},
 		TrimOperation{},
-		PrimitiveOperation{Count: iref(10)},
+		PrimitiveOperation{Count: IntPtr(10)},
 	}
 
 	c := NewClient(&Config{})
