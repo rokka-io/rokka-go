@@ -153,3 +153,79 @@ func TestDeleteDynamicMetadata(t *testing.T) {
 		t.Errorf("Expected location to be parsed in response, want: '%s', got: '%s'", loc, res.Location)
 	}
 }
+
+func TestUpdateUserMetadata(t *testing.T) {
+	org := "test"
+	hash := "1234"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash)
+	ts := test.NewMockAPI(test.Routes{"PATCH " + path: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.UpdateUserMetadata(org, hash, bytes.NewBufferString("{\"test\": \"testing\""))
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSetUserMetadata(t *testing.T) {
+	org := "test"
+	hash := "1234"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash)
+	ts := test.NewMockAPI(test.Routes{"PUT " + path: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.SetUserMetadata(org, hash, bytes.NewBufferString("{\"test\": \"testing\""))
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDeleteUserMetadata(t *testing.T) {
+	org := "test"
+	hash := "1234"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash)
+	ts := test.NewMockAPI(test.Routes{"DELETE " + path: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.DeleteUserMetadata(org, hash)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestUpdateUserMetadataByName(t *testing.T) {
+	org := "test"
+	hash := "1234"
+	metaName := "test"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user/%s", org, hash, metaName)
+	ts := test.NewMockAPI(test.Routes{"PUT " + path: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.UpdateUserMetadataByName(org, hash, metaName, bytes.NewBufferString(`"testing"`))
+	if err != nil {
+		t.Error(err)
+	}
+}
+func TestDeleteUserMetadataByName(t *testing.T) {
+	org := "test"
+	hash := "1234"
+	metaName := "test"
+	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user/%s", org, hash, metaName)
+	ts := test.NewMockAPI(test.Routes{"DELETE " + path: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.DeleteUserMetadataByName(org, hash, metaName)
+	if err != nil {
+		t.Error(err)
+	}
+}

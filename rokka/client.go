@@ -180,7 +180,10 @@ func (c *Client) Call(req *http.Request, v interface{}, rh responseHandler) erro
 	if resp.StatusCode >= 400 {
 		return handleStatusCodeError(resp, body)
 	}
-	return rh(resp, body, v)
+	if rh != nil {
+		return rh(resp, body, v)
+	}
+	return nil
 }
 
 func jsonResponseHandler(resp *http.Response, body []byte, v interface{}) error {
