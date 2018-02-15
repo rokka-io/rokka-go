@@ -66,6 +66,34 @@ func TestGetSourceImage(t *testing.T) {
 	t.Log(res)
 }
 
+func TestDeleteSourceImage(t *testing.T) {
+	org := "test"
+	hash := "hash"
+	ts := test.NewMockAPI(test.Routes{"DELETE /sourceimages/" + org + "/" + hash: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.DeleteSourceImage(org, hash)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDeleteSourceImageByBinaryHash(t *testing.T) {
+	org := "test"
+	hash := "hash"
+	ts := test.NewMockAPI(test.Routes{"DELETE /sourceimages/" + org + "?binaryHash=" + hash: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.DeleteSourceImageByBinaryHash(org, hash)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestCreateSourceImage(t *testing.T) {
 	org := "test"
 	ts := test.NewMockAPI(test.Routes{"POST /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/CreateSourceImage.json", nil}})

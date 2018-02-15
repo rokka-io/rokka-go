@@ -13,6 +13,7 @@ import (
 var sourceImagesListOptions rokka.ListSourceImagesOptions
 var dynamicMetadataOptions rokka.DynamicMetadataOptions
 var userMetadataName string
+var binaryHash bool
 
 func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 	return c.ListSourceImages(args[0], sourceImagesListOptions)
@@ -20,6 +21,13 @@ func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 
 func getSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return c.GetSourceImage(args[0], args[1])
+}
+
+func deleteSourceImage(c *rokka.Client, args []string) (interface{}, error) {
+	if binaryHash {
+		return nil, c.DeleteSourceImageByBinaryHash(args[0], args[1])
+	}
+	return nil, c.DeleteSourceImage(args[0], args[1])
 }
 
 func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
@@ -107,6 +115,15 @@ var sourceImagesGetCmd = &cobra.Command{
 	Run: run(getSourceImage, sourceImageTemplate),
 }
 
+var sourceImagesDeleteCmd = &cobra.Command{
+	Use:                   "delete [org] [hash]",
+	Short:                 "Delete a source image by hash (or binary hash if the flag is passed in)",
+	Args:                  cobra.ExactArgs(2),
+	Aliases:               []string{"d"},
+	DisableFlagsInUseLine: true,
+	Run: run(deleteSourceImage, "Successfully deleted source image.\n"),
+}
+
 var sourceImagesCreateCmd = &cobra.Command{
 	Use:                   "create [org] [file]",
 	Short:                 "Upload a new image",
@@ -181,6 +198,7 @@ func init() {
 
 	sourceImagesCmd.AddCommand(sourceImagesListCmd)
 	sourceImagesCmd.AddCommand(sourceImagesGetCmd)
+	sourceImagesCmd.AddCommand(sourceImagesDeleteCmd)
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
 
 	sourceImagesCmd.AddCommand(sourceImagesDynamicMetadataCmd)
@@ -201,6 +219,8 @@ func init() {
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Sort, "sort", "", "Sort")
+
+	sourceImagesDeleteCmd.Flags().BoolVar(&binaryHash, "binaryHash", false, "Supplied hash is a binary hash")
 
 	sourceImagesAddDynamicMetadataCmd.Flags().BoolVar(&dynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")
 	sourceImagesDeleteDynamicMetadataCmd.Flags().BoolVar(&dynamicMetadataOptions.DeletePrevious, "deletePrevious", false, "Delete previous image")

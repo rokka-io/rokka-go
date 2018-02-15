@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/google/go-querystring/query"
@@ -68,9 +69,8 @@ type GetSourceImageResponse struct {
 }
 
 // CreateSourceImageResponse is returned when creating an image.
-// BUG: Total should be an int like in ListSourceImagesResponse but isn't. This is a bug in the API.
 type CreateSourceImageResponse struct {
-	Total string                   `json:"total"`
+	Total int                      `json:"total"`
 	Items []GetSourceImageResponse `json:"items"`
 }
 
@@ -119,6 +119,31 @@ func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error
 	err = c.CallJSONResponse(req, &result)
 
 	return result, err
+}
+
+// DeleteSourceImage removes a source image by hash.
+//
+// See: https://rokka.io/documentation/references/source-images.html
+func (c *Client) DeleteSourceImage(org, hash string) error {
+	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/sourceimages/%s/%s", org, hash), nil, nil)
+	if err != nil {
+		return err
+	}
+	return c.Call(req, nil, nil)
+}
+
+// DeleteSourceImageByBinaryHash removes a source image by binaryhash.
+//
+// See: https://rokka.io/documentation/references/source-images.html
+func (c *Client) DeleteSourceImageByBinaryHash(org, binaryHash string) error {
+	qs := url.Values{}
+	qs.Set("binaryHash", binaryHash)
+
+	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/sourceimages/%s", org), nil, qs)
+	if err != nil {
+		return err
+	}
+	return c.Call(req, nil, nil)
 }
 
 // CreateSourceImage uploads an image without user or dynamic metadata set.
