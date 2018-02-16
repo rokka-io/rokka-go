@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/google/go-querystring/query"
@@ -68,6 +69,12 @@ type GetSourceImageResponse struct {
 	DynamicMetadata map[string]interface{} `json:"dynamic_metadata,omitempty"`
 }
 
+// DownloadSourceImageResponse contains the original data as a byte slice and the filename.
+type DownloadSourceImageResponse struct {
+	Data     io.ReadCloser
+	FileName string
+}
+
 // CreateSourceImageResponse is returned when creating an image.
 type CreateSourceImageResponse struct {
 	Total int                      `json:"total"`
@@ -82,6 +89,12 @@ type DynamicMetadataOptions struct {
 // DynamicMetadataResponse contains the location of the updated image.
 type DynamicMetadataResponse struct {
 	Location string
+}
+
+var contentDispositionFilename *regexp.Regexp
+
+func init() {
+	contentDispositionFilename = regexp.MustCompile(`filename="([^"]+)"$`)
 }
 
 // ListSourceImages gets a paginated list of source images.
@@ -117,6 +130,36 @@ func (c *Client) GetSourceImage(org, hash string) (GetSourceImageResponse, error
 	}
 
 	err = c.CallJSONResponse(req, &result)
+
+	return result, err
+}
+
+func downloadResponseHandler(resp *http.Response, v interface{}) error {
+	if resp.StatusCode == http.StatusOK {
+		v := v.(*DownloadSourceImageResponse)
+		v.Data = resp.Body
+
+		matches := contentDispositionFilename.FindStringSubmatch(resp.Header.Get("Content-Disposition"))
+		v.FileName = matches[1]
+
+		return nil
+	}
+
+	return handleStatusCodeError(resp)
+}
+
+// DownloadSourceImage allows to download the source image once uploaded.
+//
+// See: https://rokka.io/documentation/references/source-images.html
+func (c *Client) DownloadSourceImage(org, hash string) (DownloadSourceImageResponse, error) {
+	result := DownloadSourceImageResponse{}
+
+	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/sourceimages/%s/%s/download", org, hash), nil, nil)
+	if err != nil {
+		return result, err
+	}
+
+	err = c.Call(req, &result, downloadResponseHandler)
 
 	return result, err
 }
@@ -204,14 +247,14 @@ func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader,
 }
 
 // dynamicMetadataResponseHandler is a responseHandler reading the Location header from the successful response.
-func dynamicMetadataResponseHandler(resp *http.Response, body []byte, v interface{}) error {
+func dynamicMetadataResponseHandler(resp *http.Response, v interface{}) error {
 	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusCreated {
 		v := v.(*DynamicMetadataResponse)
 		v.Location = resp.Header.Get("Location")
 		return nil
 	}
 
-	return handleStatusCodeError(resp, body)
+	return handleStatusCodeError(resp)
 }
 
 // AddDynamicMetadata updates a source image by adding arbitrary metadata.

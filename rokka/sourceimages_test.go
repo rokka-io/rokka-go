@@ -3,6 +3,7 @@ package rokka
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -91,6 +92,34 @@ func TestDeleteSourceImageByBinaryHash(t *testing.T) {
 	err := c.DeleteSourceImageByBinaryHash(org, hash)
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestDownloadSourceImage(t *testing.T) {
+	org := "test"
+	hash := "hash"
+	headers := map[string]string{"Content-Disposition": `attachment; filename="image.png"`}
+	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org + "/" + hash + "/download": test.Response{http.StatusOK, "./fixtures/image.png", headers}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	res, err := c.DownloadSourceImage(org, hash)
+	if err != nil {
+		t.Error(err)
+	}
+	if res.FileName != "image.png" {
+		t.Errorf("Expected FileName to be '%s', got '%s'", "image.png", res.FileName)
+	}
+
+	d, err := ioutil.ReadAll(res.Data)
+	if err != nil {
+		t.Error(err)
+	}
+	defer res.Data.Close()
+
+	if len(d) != 289 {
+		t.Errorf("Expected length of Data to be '%d', got '%d'", 289, len(d))
 	}
 }
 

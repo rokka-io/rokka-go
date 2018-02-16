@@ -73,7 +73,7 @@ func (e StatusCodeError) Error() string {
 	return s
 }
 
-type responseHandler func(resp *http.Response, body []byte, v interface{}) error
+type responseHandler func(resp *http.Response, v interface{}) error
 
 // DefaultConfig is used when calling NewClient with not all config options set.
 func DefaultConfig() *Config {
@@ -115,7 +115,13 @@ func NewClient(config *Config) (c *Client) {
 	}
 }
 
-func handleStatusCodeError(resp *http.Response, body []byte) error {
+func handleStatusCodeError(resp *http.Response) error {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
 	rErr := APIError{}
 	sErr := StatusCodeError{
 		Code: resp.StatusCode,
@@ -171,22 +177,22 @@ func (c *Client) Call(req *http.Request, v interface{}, rh responseHandler) erro
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode >= 400 {
+		return handleStatusCodeError(resp)
+	}
+	if rh != nil {
+		return rh(resp, v)
+	}
+	return nil
+}
+
+func jsonResponseHandler(resp *http.Response, v interface{}) error {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return handleStatusCodeError(resp, body)
-	}
-	if rh != nil {
-		return rh(resp, body, v)
-	}
-	return nil
-}
-
-func jsonResponseHandler(resp *http.Response, body []byte, v interface{}) error {
 	if len(body) == 0 {
 		return nil
 	}

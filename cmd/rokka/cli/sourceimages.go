@@ -2,7 +2,9 @@ package cli
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 
@@ -10,10 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sourceImagesListOptions rokka.ListSourceImagesOptions
-var dynamicMetadataOptions rokka.DynamicMetadataOptions
-var userMetadataName string
-var binaryHash bool
+var (
+	sourceImagesListOptions rokka.ListSourceImagesOptions
+	dynamicMetadataOptions  rokka.DynamicMetadataOptions
+	userMetadataName        string
+	binaryHash              bool
+)
+
+var errExists = errors.New("File already exists")
 
 func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 	return c.ListSourceImages(args[0], sourceImagesListOptions)
@@ -21,6 +27,29 @@ func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 
 func getSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return c.GetSourceImage(args[0], args[1])
+}
+
+func downloadSourceImage(c *rokka.Client, args []string) (interface{}, error) {
+	if _, err := os.Stat(args[2]); err == nil {
+		return nil, errExists
+	}
+
+	file, err := os.Create(args[2])
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	res, err := c.DownloadSourceImage(args[0], args[1])
+
+	n, err := io.Copy(file, res.Data)
+	if err != nil {
+		return nil, err
+	}
+	return struct {
+		Name         string
+		BytesWritten int64
+	}{args[2], n}, nil
 }
 
 func deleteSourceImage(c *rokka.Client, args []string) (interface{}, error) {
@@ -115,11 +144,20 @@ var sourceImagesGetCmd = &cobra.Command{
 	Run: run(getSourceImage, sourceImageTemplate),
 }
 
+var sourceImagesDownloadCmd = &cobra.Command{
+	Use:                   "download [org] [hash] [fileName]",
+	Short:                 "Download a source image to the specified file.",
+	Args:                  cobra.ExactArgs(3),
+	Aliases:               []string{"d"},
+	DisableFlagsInUseLine: true,
+	Run: run(downloadSourceImage, "Success downloading {{.BytesWritten}} bytes to {{.Name}}.\n"),
+}
+
 var sourceImagesDeleteCmd = &cobra.Command{
 	Use:                   "delete [org] [hash]",
 	Short:                 "Delete a source image by hash (or binary hash if the flag is passed in)",
 	Args:                  cobra.ExactArgs(2),
-	Aliases:               []string{"d"},
+	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
 	Run: run(deleteSourceImage, "Successfully deleted source image.\n"),
 }
@@ -158,7 +196,7 @@ var sourceImagesDeleteDynamicMetadataCmd = &cobra.Command{
 	Long: `Deleting dynamic metadata generates a new image and returns the location of the new image.
 If the deletePrevious flag is supplied, the previous image will be deleted.`,
 	Args:                  cobra.ExactArgs(3),
-	Aliases:               []string{"d"},
+	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
 	Run: run(deleteDynamicMetadata, "Location: {{.Location}}"),
 }
@@ -198,6 +236,7 @@ func init() {
 
 	sourceImagesCmd.AddCommand(sourceImagesListCmd)
 	sourceImagesCmd.AddCommand(sourceImagesGetCmd)
+	sourceImagesCmd.AddCommand(sourceImagesDownloadCmd)
 	sourceImagesCmd.AddCommand(sourceImagesDeleteCmd)
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
 
