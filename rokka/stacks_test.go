@@ -63,3 +63,17 @@ func TestCreateStacks(t *testing.T) {
 
 	t.Log(res)
 }
+
+func TestDeleteStack(t *testing.T) {
+	org := "test-org"
+	name := "test-stack"
+	ts := test.NewMockAPI(test.Routes{"DELETE /stacks/" + org + "/" + name: test.Response{http.StatusNoContent, "", nil}})
+	defer ts.Close()
+
+	c := NewClient(&Config{APIAddress: ts.URL})
+
+	err := c.DeleteStack(org, name)
+	if err != nil {
+		t.Error(err)
+	}
+}
