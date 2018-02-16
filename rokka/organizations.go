@@ -4,15 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 // OrganizationResponse contains the information about an organization.
 type OrganizationResponse struct {
-	ID           string `json:"id"`
-	DisplayName  string `json:"display_name"`
-	Name         string `json:"name"`
-	BillingEmail string `json:"billing_email"`
-	Limit        *struct {
+	ID                 string    `json:"id"`
+	DisplayName        string    `json:"display_name"`
+	Name               string    `json:"name"`
+	BillingEmail       string    `json:"billing_email"`
+	Created            time.Time `json:"created"`
+	MasterOrganization string    `json:"master_organization"`
+	Limit              *struct {
 		SpaceInBytes   int `json:"space_in_bytes,omitempty"`
 		TrafficInBytes int `json:"traffic_in_bytes,omitempty"`
 	} `json:"limit,omitempty"`

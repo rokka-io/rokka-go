@@ -22,7 +22,7 @@ var organizationCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-const organizationTemplate = "Id:\t{{.ID}}\nName\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\nLimits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n"
+const organizationTemplate = "Id:\t{{.ID}}\nName:\t{{.Name}}\nDisplay name:\t{{.DisplayName}}\nBilling email:\t{{.BillingEmail}}\n{{ if .Limit }}Limits:\t\n  Space:\t{{.Limit.SpaceInBytes}}\n  Traffic:\t{{.Limit.TrafficInBytes}}\n{{ end }}"
 
 var organizationGetCmd = &cobra.Command{
 	Use:                   "get [org]",

@@ -232,3 +232,57 @@ func (c *Client) DeleteDynamicMetadata(org, hash, name string, options DynamicMe
 	err = c.Call(req, &result, dynamicMetadataResponseHandler)
 	return result, err
 }
+
+func (c *Client) userMetadata(method, org, hash string, data io.Reader) error {
+	req, err := c.NewRequest(method, fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash), data, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.Call(req, nil, nil)
+}
+
+func (c *Client) userMetadataByName(method, org, hash, name string, data io.Reader) error {
+	req, err := c.NewRequest(method, fmt.Sprintf("/sourceimages/%s/%s/meta/user/%s", org, hash, name), data, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.Call(req, nil, nil)
+}
+
+// SetUserMetadata updates a source image by adding arbitrary metadata. If there were previous user metadata set on this source image,
+// they'll get overwritten.
+//
+// See: https://rokka.io/documentation/references/image-metadata.html
+func (c *Client) SetUserMetadata(org, hash string, data io.Reader) error {
+	return c.userMetadata(http.MethodPut, org, hash, data)
+}
+
+// UpdateUserMetadata updates a source image by adding arbitrary metadata. Previous values get merged with the new values.
+//
+// See: https://rokka.io/documentation/references/image-metadata.html
+func (c *Client) UpdateUserMetadata(org, hash string, data io.Reader) error {
+	return c.userMetadata(http.MethodPatch, org, hash, data)
+}
+
+// DeleteUserMetadata updates a source image by deleting existing metadata.
+//
+// See: https://rokka.io/documentation/references/image-metadata.html
+func (c *Client) DeleteUserMetadata(org, hash string) error {
+	return c.userMetadata(http.MethodDelete, org, hash, nil)
+}
+
+// UpdateUserMetadataByName updates a source image by setting user metadata identified by name.
+//
+// See: https://rokka.io/documentation/references/image-metadata.html
+func (c *Client) UpdateUserMetadataByName(org, hash, name string, data io.Reader) error {
+	return c.userMetadataByName(http.MethodPut, org, hash, name, data)
+}
+
+// DeleteUserMetadataByName updates a source image by removing user metadata identified by name.
+//
+// See: https://rokka.io/documentation/references/image-metadata.html
+func (c *Client) DeleteUserMetadataByName(org, hash, name string) error {
+	return c.userMetadataByName(http.MethodDelete, org, hash, name, nil)
+}
