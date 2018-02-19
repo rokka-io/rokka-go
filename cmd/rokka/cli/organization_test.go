@@ -15,7 +15,8 @@ func TestCreateOrganization(t *testing.T) {
 	org := "test-org"
 	email := "testorg@example.org"
 	displayName := "Test Org"
-	ts := test.NewMockAPI(test.Routes{"PUT /organizations/" + org: test.Response{http.StatusOK, "../../../rokka/fixtures/CreateOrganization.json", nil}})
+	r := test.NewResponse(http.StatusOK, "../../../rokka/fixtures/CreateOrganization.json")
+	ts := test.NewMockAPI(t, test.Routes{"PUT /organizations/" + org: r})
 	defer ts.Close()
 
 	f, err := ioutil.TempFile(os.TempDir(), "stdin")

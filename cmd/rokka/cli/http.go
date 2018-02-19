@@ -25,7 +25,7 @@ func (hc *httpClient) Do(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			hc.log.Errorf("Unable to dump request: %s\n", err)
 		} else {
-			hc.log.Errorf("%s\n", dump)
+			hc.log.Errorf("%s\n\n", dump)
 		}
 	}
 

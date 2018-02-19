@@ -10,7 +10,8 @@ import (
 
 func TestGetOrganization(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"GET /organizations/" + org: test.Response{http.StatusOK, "./fixtures/GetOrganization.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/GetOrganization.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /organizations/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -25,7 +26,8 @@ func TestGetOrganization(t *testing.T) {
 
 func TestCreateOrganization(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"PUT /organizations/" + org: test.Response{http.StatusOK, "./fixtures/CreateOrganization.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/CreateOrganization.json")
+	ts := test.NewMockAPI(t, test.Routes{"PUT /organizations/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

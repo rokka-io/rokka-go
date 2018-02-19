@@ -13,7 +13,8 @@ import (
 
 func TestListSourceImages(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/ListSourceImages.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/ListSourceImages.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /sourceimages/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -28,7 +29,8 @@ func TestListSourceImages(t *testing.T) {
 
 func TestListSourceImagesWithQueryParams(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/ListSourceImagesWithLimitAndOffset.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/ListSourceImagesWithLimitAndOffset.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /sourceimages/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -54,7 +56,8 @@ func TestListSourceImagesWithQueryParams(t *testing.T) {
 func TestGetSourceImage(t *testing.T) {
 	org := "test"
 	hash := "hash"
-	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org + "/" + hash: test.Response{http.StatusOK, "./fixtures/GetSourceImage.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/GetSourceImage.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /sourceimages/" + org + "/" + hash: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -70,7 +73,8 @@ func TestGetSourceImage(t *testing.T) {
 func TestDeleteSourceImage(t *testing.T) {
 	org := "test"
 	hash := "hash"
-	ts := test.NewMockAPI(test.Routes{"DELETE /sourceimages/" + org + "/" + hash: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"DELETE /sourceimages/" + org + "/" + hash: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -84,7 +88,8 @@ func TestDeleteSourceImage(t *testing.T) {
 func TestDeleteSourceImageByBinaryHash(t *testing.T) {
 	org := "test"
 	hash := "hash"
-	ts := test.NewMockAPI(test.Routes{"DELETE /sourceimages/" + org + "?binaryHash=" + hash: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"DELETE /sourceimages/" + org + "?binaryHash=" + hash: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -98,8 +103,9 @@ func TestDeleteSourceImageByBinaryHash(t *testing.T) {
 func TestDownloadSourceImage(t *testing.T) {
 	org := "test"
 	hash := "hash"
-	headers := map[string]string{"Content-Disposition": `attachment; filename="image.png"`}
-	ts := test.NewMockAPI(test.Routes{"GET /sourceimages/" + org + "/" + hash + "/download": test.Response{http.StatusOK, "./fixtures/image.png", headers}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/image.png")
+	r.Headers["Content-Disposition"] = `attachment; filename="image.png"`
+	ts := test.NewMockAPI(t, test.Routes{"GET /sourceimages/" + org + "/" + hash + "/download": r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -125,7 +131,8 @@ func TestDownloadSourceImage(t *testing.T) {
 
 func TestCreateSourceImage(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"POST /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/CreateSourceImage.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/CreateSourceImage.json")
+	ts := test.NewMockAPI(t, test.Routes{"POST /sourceimages/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -146,7 +153,8 @@ func TestCreateSourceImage(t *testing.T) {
 
 func TestCreateSourceImageWithMetadata(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"POST /sourceimages/" + org: test.Response{http.StatusOK, "./fixtures/CreateSourceImageWithMetadata.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/CreateSourceImageWithMetadata.json")
+	ts := test.NewMockAPI(t, test.Routes{"POST /sourceimages/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -173,8 +181,9 @@ func TestAddDynamicMetadata(t *testing.T) {
 	hash := "1234"
 	metaName := "test-name"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, metaName)
-	headers := map[string]string{"Location": loc}
-	ts := test.NewMockAPI(test.Routes{"PUT " + path: test.Response{http.StatusCreated, "", headers}})
+	r := test.NewResponse(http.StatusCreated, "")
+	r.Headers["Location"] = loc
+	ts := test.NewMockAPI(t, test.Routes{"PUT " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -195,8 +204,9 @@ func TestDeleteDynamicMetadata(t *testing.T) {
 	hash := "1234"
 	metaName := "test-name"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/dynamic/%s", org, hash, metaName)
-	headers := map[string]string{"Location": loc}
-	ts := test.NewMockAPI(test.Routes{"DELETE " + path: test.Response{http.StatusNoContent, "", headers}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	r.Headers["Location"] = loc
+	ts := test.NewMockAPI(t, test.Routes{"DELETE " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -215,7 +225,8 @@ func TestUpdateUserMetadata(t *testing.T) {
 	org := "test"
 	hash := "1234"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash)
-	ts := test.NewMockAPI(test.Routes{"PATCH " + path: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"PATCH " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -230,7 +241,8 @@ func TestSetUserMetadata(t *testing.T) {
 	org := "test"
 	hash := "1234"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash)
-	ts := test.NewMockAPI(test.Routes{"PUT " + path: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"PUT " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -245,7 +257,8 @@ func TestDeleteUserMetadata(t *testing.T) {
 	org := "test"
 	hash := "1234"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user", org, hash)
-	ts := test.NewMockAPI(test.Routes{"DELETE " + path: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"DELETE " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -261,7 +274,8 @@ func TestUpdateUserMetadataByName(t *testing.T) {
 	hash := "1234"
 	metaName := "test"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user/%s", org, hash, metaName)
-	ts := test.NewMockAPI(test.Routes{"PUT " + path: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"PUT " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -276,7 +290,8 @@ func TestDeleteUserMetadataByName(t *testing.T) {
 	hash := "1234"
 	metaName := "test"
 	path := fmt.Sprintf("/sourceimages/%s/%s/meta/user/%s", org, hash, metaName)
-	ts := test.NewMockAPI(test.Routes{"DELETE " + path: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"DELETE " + path: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

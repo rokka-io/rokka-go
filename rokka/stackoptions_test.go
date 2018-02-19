@@ -8,7 +8,8 @@ import (
 )
 
 func TestGetStackOptions(t *testing.T) {
-	ts := test.NewMockAPI(test.Routes{"GET /stackoptions": test.Response{http.StatusOK, "./fixtures/GetStackOptions.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/GetStackOptions.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /stackoptions": r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

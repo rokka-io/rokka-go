@@ -9,7 +9,8 @@ import (
 
 func TestGetStats(t *testing.T) {
 	org := "test"
-	ts := test.NewMockAPI(test.Routes{"GET /stats/" + org: test.Response{http.StatusOK, "./fixtures/GetStats.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/GetStats.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /stats/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

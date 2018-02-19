@@ -165,7 +165,7 @@ func (c *Client) Call(req *http.Request, v interface{}, rh responseHandler) erro
 	req.Header.Add("Api-Version", c.config.APIVersion)
 	req.Header.Add("Accept", "application/json")
 
-	if len(c.config.APIKey) != 0 {
+	if len(c.config.APIKey) != 0 && req.Header.Get("Api-Key") == "" {
 		req.Header.Add("Api-Key", c.config.APIKey)
 	}
 

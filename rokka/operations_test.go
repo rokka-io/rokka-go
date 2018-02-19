@@ -8,7 +8,8 @@ import (
 )
 
 func TestGetOperations(t *testing.T) {
-	ts := test.NewMockAPI(test.Routes{"GET /operations": test.Response{http.StatusOK, "./fixtures/GetOperations.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/GetOperations.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /operations": r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
