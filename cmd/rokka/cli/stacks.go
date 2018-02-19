@@ -270,6 +270,10 @@ func listStacks(c *rokka.Client, args []string) (interface{}, error) {
 	return c.ListStacks(args[0])
 }
 
+func deleteStack(c *rokka.Client, args []string) (interface{}, error) {
+	return nil, c.DeleteStack(args[0], args[1])
+}
+
 // stacksCmd represents the stacks command
 var stacksCmd = &cobra.Command{
 	Use:                   "stacks",
@@ -286,6 +290,15 @@ var stacksListCmd = &cobra.Command{
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
 	Run: run(listStacks, "Name\tOperations\n{{range .Items}}{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}\n{{end}}"),
+}
+
+var stacksDeleteCmd = &cobra.Command{
+	Use:                   "delete [org] [name]",
+	Short:                 "Delete a stack of an organization",
+	Args:                  cobra.ExactArgs(2),
+	Aliases:               []string{"del"},
+	DisableFlagsInUseLine: true,
+	Run: run(deleteStack, "Stack successfully deleted"),
 }
 
 var stacksCreateCmd = &cobra.Command{
@@ -311,5 +324,6 @@ func init() {
 	rootCmd.AddCommand(stacksCmd)
 
 	stacksCmd.AddCommand(stacksListCmd)
+	stacksCmd.AddCommand(stacksDeleteCmd)
 	stacksCmd.AddCommand(stacksCreateCmd)
 }

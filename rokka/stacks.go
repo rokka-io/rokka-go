@@ -75,3 +75,14 @@ func (c *Client) CreateStack(org, name string, stack CreateStackRequest) (Stack,
 	err = c.CallJSONResponse(req, &result)
 	return result, err
 }
+
+// DeleteStack allows to delete an existing stack.
+//
+// See: https://rokka.io/documentation/references/stacks.html
+func (c *Client) DeleteStack(org, name string) error {
+	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/stacks/%s/%s", org, name), nil, nil)
+	if err != nil {
+		return err
+	}
+	return c.Call(req, nil, nil)
+}
