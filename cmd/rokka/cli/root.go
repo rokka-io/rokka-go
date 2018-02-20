@@ -14,7 +14,7 @@ import (
 
 var (
 	// auto-set during build of CLI
-	cliVersion = "unversioned"
+	cliVersion string
 
 	apiKey           string
 	apiAddress       string
