@@ -30,6 +30,21 @@ $ rokka stacks list <organization name> -r
 $ rokka stacks list <organization name> -v
 ```
 
+### Login
+
+The `login` command can be used to store the API-Key. Without using `login` first, the API-Key has to be specified for all executed commands.
+
+```
+# configuration gets stored in $HOME/.rokka/config
+$ rokka login --apiKey="ENTER-API-KEY-HERE"
+
+# configuration gets stored in ./my-awesome-place
+$ rokka login --apiKey="ENTER-API-KEY-HERE" --config=./my-awesome-place
+
+# If you use a different location for storing your API key, don't forget to specify the config location for all executed commands
+$ rokka stacks list <organization name> --config=./my-awesome-place
+```
+
 ## Library Usage
 
 The library can be imported using the package import path `github.com/rokka-io/rokka-go/rokka`.
