@@ -4,8 +4,9 @@ go:
   - 1.7
   - 1.8
   - 1.9
+  - "1.10"
 env:
-  - DEP_VERSION="0.3.2"
+  - DEP_VERSION="0.4.1"
 
 before_install:
   - go get -u golang.org/x/tools/cmd/goimports
@@ -30,7 +31,7 @@ jobs:
   include:
     - stage: deploy
       script: ./.travis/deploy.sh
-      go: 1.9
+      go: "1.10"
       deploy:
         skip_cleanup: true
         provider: releases
