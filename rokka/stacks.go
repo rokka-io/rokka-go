@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -58,7 +59,12 @@ func (c *Client) ListStacks(org string) (ListStacksResponse, error) {
 // CreateStack allows to create a new stack for the organization.
 //
 // See: https://rokka.io/documentation/references/stacks.html
-func (c *Client) CreateStack(org, name string, stack CreateStackRequest) (Stack, error) {
+func (c *Client) CreateStack(org, name string, stack CreateStackRequest, overwrite bool) (Stack, error) {
+	qs := url.Values{}
+	if overwrite {
+		qs.Set("overwrite", "true")
+	}
+
 	result := Stack{}
 
 	b := new(bytes.Buffer)
@@ -67,7 +73,7 @@ func (c *Client) CreateStack(org, name string, stack CreateStackRequest) (Stack,
 		return result, err
 	}
 
-	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/stacks/%s/%s", org, name), b, nil)
+	req, err := c.NewRequest(http.MethodPut, fmt.Sprintf("/stacks/%s/%s", org, name), b, qs)
 	if err != nil {
 		return result, err
 	}

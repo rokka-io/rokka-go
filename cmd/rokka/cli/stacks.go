@@ -14,6 +14,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// createStackOverwrite is used for the create stack command, to overwrite it
+var createStackOverwrite bool
+
 // stdin is assigned to a variable to make testing easier.
 var stdin = os.Stdin
 
@@ -263,7 +266,7 @@ func createStack(c *rokka.Client, args []string) (interface{}, error) {
 			return "", err
 		}
 	}
-	return c.CreateStack(org, name, req)
+	return c.CreateStack(org, name, req, createStackOverwrite)
 }
 
 func listStacks(c *rokka.Client, args []string) (interface{}, error) {
@@ -303,7 +306,7 @@ var stacksDeleteCmd = &cobra.Command{
 
 var stacksCreateCmd = &cobra.Command{
 	Use:   "create [org] [name]",
-	Short: "Create a stack for an organization",
+	Short: "Create or update a stack for an organization",
 	Long: `A stack can be created by either passing the JSON data of a new stack in a pipe to this command, or by simply executing the create function.
 If the create function is executed without a pipe a manual mode allows to select which operations and their options should be added.`,
 	Example: `  # create a stack in manual mode
@@ -313,9 +316,12 @@ If the create function is executed without a pipe a manual mode allows to select
   echo '{"operations":[{"name":"alpha","options":{"mode":"mask"}}]}' | rokka stacks create test-organization test-stack
 
   # create a stack using prefilled JSON data from a file
-  cat test-stack.json | rokka stacks create test-organization test-stack`,
+	cat test-stack.json | rokka stacks create test-organization test-stack
+
+	# to update an existing stack, pass the --overwrite flag
+	cat test-stack-updated.json | rokka stacks create test-organization test-stack --overwrite`,
 	Args:                  cobra.ExactArgs(2),
-	Aliases:               []string{"c"},
+	Aliases:               []string{"c", "save"},
 	DisableFlagsInUseLine: true,
 	Run: run(createStack, "Stack {{.Name}} created:\n\n{{json .}}\n"),
 }
@@ -326,4 +332,6 @@ func init() {
 	stacksCmd.AddCommand(stacksListCmd)
 	stacksCmd.AddCommand(stacksDeleteCmd)
 	stacksCmd.AddCommand(stacksCreateCmd)
+
+	stacksCreateCmd.Flags().BoolVar(&createStackOverwrite, "overwrite", false, "Overwrite an existing hash")
 }
