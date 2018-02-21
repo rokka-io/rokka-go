@@ -56,7 +56,7 @@ func TestCreateStacks(t *testing.T) {
 		Operations:  ops,
 		Options:     options,
 		Expressions: expressions,
-	})
+	}, false)
 	if err != nil {
 		t.Error(err)
 	}
