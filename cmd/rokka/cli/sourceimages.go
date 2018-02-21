@@ -187,7 +187,7 @@ If the deletePrevious flag is supplied, the previous image will be deleted.`,
 	Args:                  cobra.ExactArgs(4),
 	Aliases:               []string{"a"},
 	DisableFlagsInUseLine: true,
-	Run: run(addDynamicMetadata, "Location: {{.Location}}"),
+	Run: run(addDynamicMetadata, "Location: {{.Location}}\n"),
 }
 
 var sourceImagesDeleteDynamicMetadataCmd = &cobra.Command{
@@ -198,7 +198,7 @@ If the deletePrevious flag is supplied, the previous image will be deleted.`,
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteDynamicMetadata, "Location: {{.Location}}"),
+	Run: run(deleteDynamicMetadata, "Location: {{.Location}}\n"),
 }
 
 var sourceImagesUserMetadataCmd = &cobra.Command{

@@ -298,7 +298,7 @@ var stacksDeleteCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteStack, "Stack successfully deleted"),
+	Run: run(deleteStack, "Stack successfully deleted\n"),
 }
 
 var stacksCreateCmd = &cobra.Command{
@@ -317,7 +317,7 @@ If the create function is executed without a pipe a manual mode allows to select
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"c"},
 	DisableFlagsInUseLine: true,
-	Run: run(createStack, "Stack {{.Name}} created:\n\n{{json .}}"),
+	Run: run(createStack, "Stack {{.Name}} created:\n\n{{json .}}\n"),
 }
 
 func init() {
