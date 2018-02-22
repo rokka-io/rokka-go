@@ -45,6 +45,28 @@ $ rokka login --apiKey="ENTER-API-KEY-HERE" --config=./my-awesome-place
 $ rokka stacks list <organization name> --config=./my-awesome-place
 ```
 
+### Advanced usage
+
+The output of every command in the CLI is defined by a template written in Go's [text/template language](https://golang.org/pkg/text/template/).
+In case you want to have a more specific output adapted to your needs you can overwrite that template on the fly by specifying the `--template` flag.
+
+Example:
+```
+# list source images
+$ rokka sourceimages list <organization>
+Name                                           Hash                                      Details
+rokka-pic.png                     AAAA937b9b057e419cf96c0696be8db9ed481BBB  image/png, 1260x840
+foo.jpg                           AAAA3b1297cd6c272f5beb253921956b81007BBB  image/jpeg, 2498x1389
+
+# list only the hashes (make sure you enter the newlines correctly)
+$ rokka sourceimages list <organization> --template="
+{{range .Items}}{{.Hash}}
+{{end}}"
+
+AAAA937b9b057e419cf96c0696be8db9ed481BBB
+AAAA3b1297cd6c272f5beb253921956b81007BBB
+```
+
 ## Library Usage
 
 The library can be imported using the package import path `github.com/rokka-io/rokka-go/rokka`.
