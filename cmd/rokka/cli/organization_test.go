@@ -29,7 +29,7 @@ func TestCreateOrganization(t *testing.T) {
 	log.StdOut = f
 	logger = log
 
-	cl = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
+	rokkaClient = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
 
 	organizationCreateCmd.Run(&cobra.Command{}, []string{org, email, displayName})
 

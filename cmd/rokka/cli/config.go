@@ -7,9 +7,10 @@ import (
 	"path"
 )
 
-// Config stores the APIKey in a file to be used later for authenticating against rokka without having to pass an APIKey as a flag.
+// Config stores the APIKey and ImageHost in a file to be used later for authenticating against rokka without having to pass an APIKey/ImageHost as a flag.
 type Config struct {
-	APIKey string `json:"apiKey"`
+	APIKey    string `json:"apiKey"`
+	ImageHost string `json:"imageHost"`
 }
 
 var configPath string

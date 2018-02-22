@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const defaultImageHost = "https://{{organization}}.rokka.io"
+
 var (
 	// auto-set during build of CLI
 	cliVersion string
@@ -22,9 +24,10 @@ var (
 	verbose          bool
 	responseTemplate string
 	configFile       string
+	imageHost        string
 
-	logger *cliLog
-	cl     *rokka.Client
+	logger      *cliLog
+	rokkaClient *rokka.Client
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -39,10 +42,11 @@ var rootCmd = &cobra.Command{
 
 		hc := newHTTPClient(logger)
 
-		cl = rokka.NewClient(&rokka.Config{
+		rokkaClient = rokka.NewClient(&rokka.Config{
 			APIKey:     apiKey,
 			APIAddress: apiAddress,
 			HTTPClient: hc,
+			ImageHost:  imageHost,
 		})
 	},
 }
@@ -73,6 +77,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&raw, "raw", "r", false, "Show raw HTTP response")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose mode")
 	rootCmd.PersistentFlags().StringVar(&responseTemplate, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
+	rootCmd.PersistentFlags().StringVar(&imageHost, "imageHost", defaultImageHost, "Image host used for preview URLs")
 }
 
 func getPath() (string, error) {
@@ -96,5 +101,8 @@ func initConfig() {
 
 	if len(apiKey) == 0 {
 		apiKey = cfg.APIKey
+	}
+	if imageHost == defaultImageHost && len(cfg.ImageHost) != 0 {
+		imageHost = cfg.ImageHost
 	}
 }
