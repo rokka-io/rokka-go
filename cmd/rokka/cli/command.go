@@ -21,10 +21,11 @@ const rawTemplate = "{{json .}}"
 
 // funcMap contain used helper funcs in the templates.
 var funcMap = template.FuncMap{
-	"json":     prettyJSON,
-	"datetime": prettyDateTime,
-	"date":     prettyDate,
-	"join":     join,
+	"json":       prettyJSON,
+	"datetime":   prettyDateTime,
+	"date":       prettyDate,
+	"join":       join,
+	"previewurl": previewURL,
 }
 
 func logErrorAndExit(err error) {
@@ -45,7 +46,7 @@ func run(fn func(c *rokka.Client, args []string) (interface{}, error), tpl strin
 			tmpl = rawTemplate
 		}
 
-		res, err := fn(cl, args)
+		res, err := fn(rokkaClient, args)
 		if err != nil {
 			switch err := err.(type) {
 			case *rokka.AnnotatedUnmarshalTypeError:
@@ -71,6 +72,16 @@ func run(fn func(c *rokka.Client, args []string) (interface{}, error), tpl strin
 		}
 		w.Flush()
 	}
+}
+
+// previewURL generates a preview URL for a source image.
+//
+// Will panic if `rokkaClient` is nil.
+func previewURL(organization, hash, format string) (string, error) {
+	if rokkaClient == nil {
+		panic("Rokka client needs to be setup before running preview URL.")
+	}
+	return rokkaClient.GetURL(organization, hash, format, nil)
 }
 
 // TitleCamelCase converts a string to `camelCase`, then uses strings.Title to convert it to `CamelCase`.

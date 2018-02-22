@@ -36,7 +36,7 @@ func TestCurl(t *testing.T) {
 	log.StdOut = f
 	logger = log
 
-	cl = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
+	rokkaClient = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
 
 	cmd := curlCmd
 	if err := cmd.Flags().Set("header", fmt.Sprintf("%s: %s", headerNameToSet, headerValueToSet)); err != nil {
@@ -80,7 +80,7 @@ func TestCurl_IncludeHeaders(t *testing.T) {
 	log.StdOut = f
 	logger = log
 
-	cl = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
+	rokkaClient = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
 
 	cmd := curlCmd
 	if err := cmd.Flags().Set("include", "true"); err != nil {
@@ -124,7 +124,7 @@ func TestCurl_OverrideMethod(t *testing.T) {
 	log.StdOut = f
 	logger = log
 
-	cl = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
+	rokkaClient = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
 
 	cmd := curlCmd
 	if err := cmd.Flags().Set("request", "PUT"); err != nil {
@@ -174,7 +174,7 @@ func TestCurl_SendDataString(t *testing.T) {
 	log.StdOut = f
 	logger = log
 
-	cl = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
+	rokkaClient = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
 
 	cmd := curlCmd
 	if err := cmd.Flags().Set("data", expectedBody); err != nil {
@@ -239,7 +239,7 @@ func TestCurl_SendDataFile(t *testing.T) {
 	log.StdOut = f
 	logger = log
 
-	cl = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
+	rokkaClient = rokka.NewClient(&rokka.Config{APIAddress: ts.URL, HTTPClient: newHTTPClient(log)})
 
 	cmd := curlCmd
 	if err := cmd.Flags().Set("data", "@"+inputFile.Name()); err != nil {
