@@ -34,7 +34,7 @@ func login(c *rokka.Client, args []string) (interface{}, error) {
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Stores the API key in the configuration file",
+	Short: "Stores the API key as JSON in the configuration file specified using `--config`.",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if !cmd.Flags().Lookup("apiKey").Changed {
 			return errAPIKeyRequired
