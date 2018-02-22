@@ -9,7 +9,8 @@ import (
 
 func TestListStacks(t *testing.T) {
 	org := "test-org"
-	ts := test.NewMockAPI(test.Routes{"GET /stacks/" + org: test.Response{http.StatusOK, "./fixtures/ListStacks.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/ListStacks.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /stacks/" + org: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -25,7 +26,8 @@ func TestListStacks(t *testing.T) {
 func TestCreateStacks(t *testing.T) {
 	org := "test-org"
 	name := "test-stack"
-	ts := test.NewMockAPI(test.Routes{"PUT /stacks/" + org + "/" + name: test.Response{http.StatusOK, "./fixtures/CreateStack.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/CreateStack.json")
+	ts := test.NewMockAPI(t, test.Routes{"PUT /stacks/" + org + "/" + name: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})
@@ -67,7 +69,8 @@ func TestCreateStacks(t *testing.T) {
 func TestDeleteStack(t *testing.T) {
 	org := "test-org"
 	name := "test-stack"
-	ts := test.NewMockAPI(test.Routes{"DELETE /stacks/" + org + "/" + name: test.Response{http.StatusNoContent, "", nil}})
+	r := test.NewResponse(http.StatusNoContent, "")
+	ts := test.NewMockAPI(t, test.Routes{"DELETE /stacks/" + org + "/" + name: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

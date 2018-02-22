@@ -10,7 +10,8 @@ import (
 func TestCreateMembership(t *testing.T) {
 	org := "test"
 	email := "test@example.org"
-	ts := test.NewMockAPI(test.Routes{"PUT /organizations/" + org + "/memberships/" + email: test.Response{http.StatusCreated, "./fixtures/CreateMembership.json", nil}})
+	r := test.NewResponse(http.StatusCreated, "./fixtures/CreateMembership.json")
+	ts := test.NewMockAPI(t, test.Routes{"PUT /organizations/" + org + "/memberships/" + email: r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL})

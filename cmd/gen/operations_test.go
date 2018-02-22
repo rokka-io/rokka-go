@@ -14,7 +14,8 @@ import (
 )
 
 func TestRunCodeGenerator(t *testing.T) {
-	ts := test.NewMockAPI(test.Routes{"GET /operations": test.Response{http.StatusOK, "./testdata/GetOperations.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./testdata/GetOperations.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /operations": r})
 	defer ts.Close()
 
 	snapshotFileName := "./testdata/operations_object.go.snapshot"

@@ -15,7 +15,8 @@ import (
 func TestCreateStack_Piped(t *testing.T) {
 	org := "test-org"
 	name := "test-name"
-	ts := test.NewMockAPI(test.Routes{"PUT /stacks/" + org + "/" + name: test.Response{http.StatusOK, "../../../rokka/fixtures/CreateStack.json", nil}})
+	r := test.NewResponse(http.StatusOK, "../../../rokka/fixtures/CreateStack.json")
+	ts := test.NewMockAPI(t, test.Routes{"PUT /stacks/" + org + "/" + name: r})
 	defer ts.Close()
 	c := rokka.NewClient(&rokka.Config{APIAddress: ts.URL})
 
@@ -77,7 +78,8 @@ func TestCreateStack_Piped(t *testing.T) {
 func TestCreateStack_CLI(t *testing.T) {
 	org := "test-org"
 	name := "test-name"
-	ts := test.NewMockAPI(test.Routes{"GET /operations": test.Response{http.StatusOK, "../../../rokka/fixtures/GetOperations.json", nil}})
+	r := test.NewResponse(http.StatusOK, "../../../rokka/fixtures/GetOperations.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /operations": r})
 	defer ts.Close()
 	c := rokka.NewClient(&rokka.Config{APIAddress: ts.URL})
 

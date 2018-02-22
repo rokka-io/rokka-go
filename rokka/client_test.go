@@ -9,7 +9,8 @@ import (
 )
 
 func TestCall_JSONError(t *testing.T) {
-	ts := test.NewMockAPI(test.Routes{"GET /": test.Response{http.StatusOK, "./fixtures/Call_JSONError.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/Call_JSONError.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /": r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL, APIKey: "test"})
@@ -43,7 +44,8 @@ func TestCall_JSONError(t *testing.T) {
 }
 
 func TestValidAPIKey(t *testing.T) {
-	ts := test.NewMockAPI(test.Routes{"GET /": test.Response{http.StatusOK, "./fixtures/GetValidAPIKey.json", nil}})
+	r := test.NewResponse(http.StatusOK, "./fixtures/GetValidAPIKey.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /": r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL, APIKey: "test"})
@@ -59,7 +61,8 @@ func TestValidAPIKey(t *testing.T) {
 }
 
 func TestValidAPIKey_InvalidKey(t *testing.T) {
-	ts := test.NewMockAPI(test.Routes{"GET /": test.Response{http.StatusForbidden, "./fixtures/GetInvalidAPIKey.json", nil}})
+	r := test.NewResponse(http.StatusForbidden, "./fixtures/GetInvalidAPIKey.json")
+	ts := test.NewMockAPI(t, test.Routes{"GET /": r})
 	defer ts.Close()
 
 	c := NewClient(&Config{APIAddress: ts.URL, APIKey: "test"})
