@@ -47,7 +47,7 @@ var rootCmd = &cobra.Command{
 			APIAddress: apiAddress,
 			HTTPClient: hc,
 			ImageHost:  imageHost,
-		})
+		}).AutoRetry()
 	},
 }
 

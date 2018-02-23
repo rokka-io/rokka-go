@@ -76,3 +76,18 @@ func TestValidAPIKey_InvalidKey(t *testing.T) {
 		t.Error("Expected to not have a valid API key")
 	}
 }
+
+func TestAutoRetryDoesNotAffectOriginalClient(t *testing.T) {
+	c := NewClient(&Config{})
+	for i := 0; i < 10; i++ {
+		go func(c *Client) {
+			rc := c.AutoRetry()
+			if _, ok := rc.config.HTTPClient.(*RetryingHTTPClient); !ok {
+				t.Errorf("AutoRetry did not return a RetryingHTTPClient but %T", rc.config.HTTPClient)
+			}
+			if _, ok := c.config.HTTPClient.(*RetryingHTTPClient); ok {
+				t.Errorf("AutoRetry did return a RetryingHTTPClient for normal client")
+			}
+		}(c)
+	}
+}
