@@ -161,10 +161,10 @@ func TestCreateStack_CLI(t *testing.T) {
 	if *opResize.Mode != "box" {
 		t.Fatalf("Expected Mode to be %s, got %s", "mode", *opResize.Mode)
 	}
-	if *opResize.Upscale != false {
+	if *opResize.Upscale {
 		t.Fatalf("Expected Upscale to be %t, got %t", false, *opResize.Upscale)
 	}
-	if *opResize.UpscaleDpr != true {
+	if !*opResize.UpscaleDpr {
 		t.Fatalf("Expected UpscaleDpr to be %t, got %t", true, *opResize.UpscaleDpr)
 	}
 	if *opResize.Width != 2 {

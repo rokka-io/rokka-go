@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// MembershipRole is a simple alias to string for the defined constants.
 type MembershipRole string
 
 // RoleRead, RoleWrite and RoleAdmin are membership roles.

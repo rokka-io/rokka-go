@@ -61,7 +61,7 @@ func Execute() {
 }
 
 func init() {
-	logger = NewCLILog(verbose)
+	logger = newCLILog(verbose)
 
 	p, err := getPath()
 	if err != nil {

@@ -39,7 +39,7 @@ func TestRun_ValidOutput(t *testing.T) {
 	}
 	defer os.Remove(stdOut.Name())
 
-	logger = NewCLILog(false)
+	logger = newCLILog(false)
 	logger.StdErr = stdErr
 	logger.StdOut = stdOut
 
@@ -93,7 +93,7 @@ func TestRun_ErrorOutput(t *testing.T) {
 	}
 	defer os.Remove(stdOut.Name())
 
-	logger = NewCLILog(false)
+	logger = newCLILog(false)
 
 	cmd := cobra.Command{}
 

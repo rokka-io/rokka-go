@@ -41,6 +41,9 @@ func downloadSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	defer file.Close()
 
 	res, err := c.DownloadSourceImage(args[0], args[1])
+	if err != nil {
+		return nil, err
+	}
 
 	n, err := io.Copy(file, res.Data)
 	if err != nil {

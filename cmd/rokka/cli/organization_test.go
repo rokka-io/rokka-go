@@ -25,7 +25,7 @@ func TestCreateOrganization(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	log := NewCLILog(false)
+	log := newCLILog(false)
 	log.StdOut = f
 	logger = log
 
@@ -36,6 +36,9 @@ func TestCreateOrganization(t *testing.T) {
 	f.Seek(0, 0)
 
 	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		panic(err)
+	}
 
 	expected := "Id:             8c0cbde4-ba62-11e7-abc4-cec278b6b50a\nName:           test\nDisplay name:   Dev Environment\nBilling email:  info@example.com\n"
 	if string(b) != expected {

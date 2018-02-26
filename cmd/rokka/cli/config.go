@@ -61,9 +61,5 @@ func SaveConfig(c Config) error {
 	}
 
 	_, err = f.Write(d)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

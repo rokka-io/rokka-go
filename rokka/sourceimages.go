@@ -221,16 +221,14 @@ func (c *Client) CreateSourceImageWithMetadata(org, name string, data io.Reader,
 			return result, err
 		}
 	}
-	if dynamicMetadata != nil {
-		for k, v := range dynamicMetadata {
-			ffw, err := w.CreateFormField(fmt.Sprintf("meta_dynamic[0][%s]", k))
-			if err != nil {
-				return result, err
-			}
-			err = json.NewEncoder(ffw).Encode(v)
-			if err != nil {
-				return result, err
-			}
+	for k, v := range dynamicMetadata {
+		ffw, err := w.CreateFormField(fmt.Sprintf("meta_dynamic[0][%s]", k))
+		if err != nil {
+			return result, err
+		}
+		err = json.NewEncoder(ffw).Encode(v)
+		if err != nil {
+			return result, err
 		}
 	}
 	w.Close()

@@ -1,2 +1,2 @@
-// Package cmd contains the commands and helper utilities for the rokka CLI.
+// Package cli contains the commands and helper utilities for the rokka CLI.
 package cli

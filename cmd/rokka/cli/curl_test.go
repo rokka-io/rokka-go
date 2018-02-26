@@ -32,7 +32,7 @@ func TestCurl(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	log := NewCLILog(false)
+	log := newCLILog(false)
 	log.StdOut = f
 	logger = log
 
@@ -76,7 +76,7 @@ func TestCurl_IncludeHeaders(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	log := NewCLILog(false)
+	log := newCLILog(false)
 	log.StdOut = f
 	logger = log
 
@@ -120,7 +120,7 @@ func TestCurl_OverrideMethod(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	log := NewCLILog(false)
+	log := newCLILog(false)
 	log.StdOut = f
 	logger = log
 
@@ -170,7 +170,7 @@ func TestCurl_SendDataString(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	log := NewCLILog(false)
+	log := newCLILog(false)
 	log.StdOut = f
 	logger = log
 
@@ -235,7 +235,7 @@ func TestCurl_SendDataFile(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	log := NewCLILog(false)
+	log := newCLILog(false)
 	log.StdOut = f
 	logger = log
 
