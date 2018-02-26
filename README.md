@@ -69,6 +69,12 @@ AAAA3b1297cd6c272f5beb253921956b81007BBB
 
 ## Library Usage
 
+Go >=1.8 is required.
+
+```bash
+$ go get github.com/rokka-io/rokka-go
+```
+
 The library can be imported using the package import path `github.com/rokka-io/rokka-go/rokka`.
 The godoc is published on [godoc.org/github.com/rokka-io/rokka-go](https://godoc.org/github.com/rokka-io/rokka-go).
 
@@ -120,14 +126,6 @@ retryingClient.GetOrganization("example")
 ```
 
 ## Contributing
-
-### Install
-
-Go >=1.7 is required.
-
-```bash
-$ go get github.com/rokka-io/rokka-go
-```
 
 ### Dependencies
 
