@@ -39,8 +39,8 @@ jobs:
         api_key:
           secure: DB4mN/YKS7e/yYfqgZ5e2vocvMW/WfZofj1PtJu2imF+HEp+XC6KjhIKZYcp9Qgopl2uF2WhFCWc4Yf1fItAE4jQA41aF8poarPK1bRpvl4HoooIL6ONlAoAG9DnTyV3R2gNIRIJZD8T++Ue5kosWFD9o9BjQDiSkWO4ZJ16IjeAY+iCT/36WaIyYpNAPqF6JJqmNX4SJ+h8jor4IS33dv9eO54iMrHIMvXf9sxqS0yEnNJJHZbY1vhdJ6IfAmqysH5jz775WKq6b1AD50pPAn+kwrnYHhh1naG9smKqwbbJ1lhEJBjNHHpwwPWo/Z4bqkEKy2pocrYfRYNMHvAX2lNcw+EnA/08dQKYx7FlMld4gpCrcAp7U+iQQKiBV76jQr4o4HMKdDhNQflzeWlPOp5xZs3fJ47jefJjef/OnDy5S3/9FANkGS0x3my0/5D1bklpWmqS+EodzoxkSE42ZMgPJF6uaTiHYiKtuePxr1j6WMXkTPCRIPU7HbsscGv9O/Y5IRXqb0reC8AZ5FLO3U5mV7tHAwJfCZAh83OsCyfRZS7ebHzvjTXhB+2KUiBunfJthXCvP26q+h8kyd7KVrvRTQwu485WBBdgc7H/FL2SUPUMT/zHUQuA84hSxOu0Ns6PvR7HkG9/MXCXvZiRSMLeFFrunG+09A7eLW89c8I=
         file:
-          - rokka_darwin_amd64
-          - rokka_linux_amd64
-          - rokka_windows_amd64.exe
+          - rokka_macos.zip
+          - rokka_linux.zip
+          - rokka_windows.zip
         on:
           tags: true
