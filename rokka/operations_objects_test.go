@@ -91,7 +91,7 @@ var operationObjectsTests = []struct {
 	{"AutorotateOperation with multiple args", AutorotateOperation{Width: IntPtr(10), Height: IntPtr(20), RotationDirection: StrPtr("clockwise")}, true, "autorotate-height-20-rotation_direction-clockwise-width-10"},
 	{"BlurOperation with missing args", BlurOperation{}, false, "blur"},
 	{"BlurOperation with valid args", BlurOperation{Sigma: Float64Ptr(1.337)}, true, "blur-sigma-1.337"},
-	{"CompositionOperation missing args", CompositionOperation{}, false, "composition"},
+	{"CompositionOperation missing args", CompositionOperation{}, true, "composition"},
 	{"CompositionOperation with valid args", CompositionOperation{Anchor: StrPtr("top"), Height: IntPtr(10), Width: IntPtr(20), Mode: StrPtr("test")}, true, "composition-anchor-top-height-10-mode-test-width-20"},
 	{"CropOperation with missing args", CropOperation{}, false, "crop"},
 	{"CropOperation with valid args", CropOperation{Height: IntPtr(100), Width: IntPtr(200)}, true, "crop-height-100-width-200"},

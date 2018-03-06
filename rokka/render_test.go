@@ -52,7 +52,7 @@ func TestGetURLWithCustomImageHost(t *testing.T) {
 
 func TestGetURLWithInvalidStackOperation(t *testing.T) {
 	operations := []Operation{
-		CompositionOperation{},
+		CropOperation{},
 	}
 
 	c := NewClient(&Config{})

@@ -166,12 +166,12 @@ func (o *Operations) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
+		*o = append(*o, op.(Operation))
 		if err := json.Unmarshal(v.Options, op); err != nil {
 			// BUG(mweibel): We continue here when such an error is reached because rokka sometimes (legacy reasons)
 			//               has options on an operation which are not of the correct type. Should we write something to stdout? also not nice though..
 			continue
 		}
-		*o = append(*o, op.(Operation))
 	}
 	return nil
 }
