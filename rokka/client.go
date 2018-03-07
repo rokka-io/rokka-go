@@ -41,12 +41,13 @@ type HTTPRequester interface {
 
 // Config contains configuration for Client.
 type Config struct {
-	APIAddress string
-	APIVersion string
-	APIKey     string
-	ImageHost  string
-	Verbose    bool
-	HTTPClient HTTPRequester
+	APIAddress         string
+	APIVersion         string
+	APIKey             string
+	ImageHost          string
+	Verbose            bool
+	HTTPClient         HTTPRequester
+	RetryingHTTPClient HTTPRequester
 }
 
 // APIError is returned by the API in case of errors.
@@ -77,12 +78,13 @@ type responseHandler func(resp *http.Response, v interface{}) error
 
 // DefaultConfig is used when calling NewClient with not all config options set.
 func DefaultConfig() *Config {
+	c := &http.Client{}
 	return &Config{
 		APIAddress: "https://api.rokka.io",
 		APIVersion: "1",
 		APIKey:     "",
 		ImageHost:  "https://{{organization}}.rokka.io",
-		HTTPClient: &http.Client{},
+		HTTPClient: c,
 	}
 }
 
@@ -108,6 +110,10 @@ func NewClient(config *Config) (c *Client) {
 
 	if config.HTTPClient == nil {
 		config.HTTPClient = defConfig.HTTPClient
+	}
+
+	if config.RetryingHTTPClient == nil {
+		config.RetryingHTTPClient = NewRetryingHTTPClient(config.HTTPClient, 10, 6000)
 	}
 
 	return &Client{
@@ -156,6 +162,27 @@ func handleUnmarshalError(err error, body []byte) error {
 	default:
 		return err
 	}
+}
+
+// AutoRetry returns a client with automatic retries in case of failures enabled.
+// By default this is the retryingHTTPClient which does max 10 retries in these cases:
+//  - a 429, 502, or 503 response is encountered
+//  - a client connection error is encountered
+//
+// The return value is a copy of the Client. This can be either stored in a separate variable or
+// used directly, e.g.:
+//
+//    cl := rokka.NewClient(&rokka.Config{})
+//    cl.AutoRetry().GetOrganization("example")
+//
+// By following the pattern outlined in `http.go`, an own, more tailored retry pattern can be implemented if needed.
+// When instantiating the rokka client such a specific implementation can be passed to the config as RetryingHTTPClient.
+//
+// AutoRetry is safe for concurrent use because it returns a copy of the client.
+func (c *Client) AutoRetry() *Client {
+	nc := *c
+	nc.config.HTTPClient = c.config.RetryingHTTPClient
+	return &nc
 }
 
 // Call executes an HTTP request.

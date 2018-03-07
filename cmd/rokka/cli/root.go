@@ -47,7 +47,7 @@ var rootCmd = &cobra.Command{
 			APIAddress: apiAddress,
 			HTTPClient: hc,
 			ImageHost:  imageHost,
-		})
+		}).AutoRetry()
 	},
 }
 
@@ -61,7 +61,7 @@ func Execute() {
 }
 
 func init() {
-	logger = NewCLILog(verbose)
+	logger = newCLILog(verbose)
 
 	p, err := getPath()
 	if err != nil {

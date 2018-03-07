@@ -1,7 +1,6 @@
 ---
 language: go
 go:
-  - 1.7
   - 1.8
   - 1.9
   - "1.10"
@@ -10,9 +9,11 @@ env:
 
 before_install:
   - go get -u golang.org/x/tools/cmd/goimports
-  - go get github.com/mattn/goveralls
-  - go get github.com/go-playground/overalls
-  - go get github.com/mitchellh/gox
+  - go get -u github.com/mattn/goveralls
+  - go get -u github.com/go-playground/overalls
+  - go get -u github.com/mitchellh/gox
+  - go get -u honnef.co/go/tools/cmd/megacheck
+  - go get -u golang.org/x/lint/golint
   - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
   - chmod +x $GOPATH/bin/dep
 

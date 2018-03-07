@@ -12,8 +12,8 @@ type cliLog struct {
 	StdOut  *os.File
 }
 
-// NewCLILog creates a cliLog with stdout/stderr set to default.
-func NewCLILog(verbose bool) *cliLog {
+// newCLILog creates a cliLog with stdout/stderr set to default.
+func newCLILog(verbose bool) *cliLog {
 	return &cliLog{
 		Verbose: verbose,
 		StdErr:  os.Stderr,
