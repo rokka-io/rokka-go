@@ -14,4 +14,3 @@ cp ../rokka_windows_amd64.exe . && mv rokka_windows_amd64.exe rokka.exe && zip r
 cd ..
 
 mv build/*.zip .
-rmdir build/
