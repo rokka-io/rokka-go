@@ -8,15 +8,12 @@ import (
 	"os"
 	"path"
 
-	"github.com/rokka-io/rokka-go/cmd/rokka/cli/doonall"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
-	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 var (
 	sourceImagesListOptions rokka.ListSourceImagesOptions
-	doOnAllOptions          doonall.Options
 	dynamicMetadataOptions  rokka.DynamicMetadataOptions
 	userMetadataName        string
 	binaryHash              bool
@@ -71,62 +68,6 @@ func restoreSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 func copySourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return nil, c.CopySourceImage(args[0], args[1], args[2])
-}
-
-func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
-	doOnAllOptions.SourceOrganization = args[0]
-	doOnAllOptions.DestinationOrganization = args[1]
-	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaCopy, fmt.Sprintf("Copying of %%d source images from organization %s. to %s\n", args[0], args[1]), 100)
-}
-
-func deleteAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
-	doOnAllOptions.SourceOrganization = args[0]
-	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaDelete, fmt.Sprintf("Deleting of %%d source images on organization %s.\n", args[0]), 1)
-}
-
-func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doonall.CallbackFunc, tmpl string, limit int) (interface{}, error) {
-	images := make(chan string)
-	results := make(chan doonall.OperationResult)
-
-	doonall.StartWorkers(options, rokkaClient, images, results, updateFunc, limit)
-
-	var counterError, counterSuccess int = 0, 0
-	// get the total count for progress bar
-	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
-	listSourceImagesOptions.Limit = 1
-	res, err := c.ListSourceImages(options.SourceOrganization, listSourceImagesOptions)
-	if err != nil {
-		return nil, err
-	}
-	logger.Errorf(tmpl, res.Total)
-	if !options.Force {
-		logger.Errorf("Are you sure? (yes/no): ")
-		if !askForConfirmation() {
-			return nil, errors.New("operation cancelled")
-		}
-	}
-	bar := pb.New(res.Total)
-	bar.ShowSpeed = true
-	bar.Output = logger.StdErr
-	if doOnAllOptions.NoProgress {
-		bar.NotPrint = true
-	}
-
-	// Scan folders and files
-	go doonall.Scan(doOnAllOptions, rokkaClient, images)
-	bar.Start()
-	for result := range results {
-		counterSuccess += result.OK
-		counterError += result.NotOK
-		bar.Set(counterError + counterSuccess)
-	}
-	bar.Finish()
-
-	return struct {
-		SuccessfullyUploaded int
-		ErrorUploaded        int
-	}{counterSuccess, counterError}, nil
-
 }
 
 func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
@@ -250,24 +191,6 @@ var sourceImagesCopyCmd = &cobra.Command{
 	Run:                   run(copySourceImage, "Successfully copied source image.\n"),
 }
 
-var sourceImagesCopyAllCmd = &cobra.Command{
-	Use:                   "copy-all [sourceOrg] [destinationOrg]",
-	Short:                 "Copy all source images from on org to another",
-	Args:                  cobra.ExactArgs(2),
-	Aliases:               []string{"cpa"},
-	DisableFlagsInUseLine: true,
-	Run:                   run(copyAllSourceImage, "Successfully copied {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
-}
-
-var sourceImagesDeleteAllCmd = &cobra.Command{
-	Use:                   "delete-all [org]",
-	Short:                 "Deletes all source images from on org to another",
-	Args:                  cobra.ExactArgs(1),
-	Aliases:               []string{"del-all"},
-	DisableFlagsInUseLine: true,
-	Run:                   run(deleteAllSourceImage, "Successfully deleted {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
-}
-
 var sourceImagesCreateCmd = &cobra.Command{
 	Use:                   "create [org] [file]",
 	Short:                 "Upload a new image",
@@ -349,9 +272,6 @@ func init() {
 
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
 
-	sourceImagesCmd.AddCommand(sourceImagesCopyAllCmd)
-	sourceImagesCmd.AddCommand(sourceImagesDeleteAllCmd)
-
 	sourceImagesCmd.AddCommand(sourceImagesDynamicMetadataCmd)
 	sourceImagesDynamicMetadataCmd.AddCommand(sourceImagesAddDynamicMetadataCmd)
 	sourceImagesDynamicMetadataCmd.AddCommand(sourceImagesDeleteDynamicMetadataCmd)
@@ -360,70 +280,17 @@ func init() {
 	sourceImagesUserMetadataCmd.AddCommand(sourceImagesUpdateUserMetadataCmd)
 	sourceImagesUserMetadataCmd.AddCommand(sourceImagesDeleteUserMetadataCmd)
 
-	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Limit, "limit", "l", 20, "Limit")
-	sourceImagesListCmd.Flags().StringVarP(&sourceImagesListOptions.Offset, "offset", "o", "0", "Offset")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Hash, "hash", "", "Hash")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.BinaryHash, "binaryHash", "", "Binary hash")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Size, "size", "", "Size in kilobytes")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Format, "format", "", "Format")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Width, "width", "", "Width")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
-	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Sort, "sort", "", "Sort")
-
-	sourceImagesCopyAllCmd.Flags().IntVarP(
-		&doOnAllOptions.Concurrency,
-		"concurrency",
-		"",
-		2,
-		"Number of concurrent processes to use for uploading images",
-	)
-	sourceImagesCopyAllCmd.Flags().BoolVarP(
-		&doOnAllOptions.DryRun,
-		"dry-run",
-		"",
-		false,
-		"Simulate operation, do not copy files on Rokka.io",
-	)
-
-	sourceImagesCopyAllCmd.Flags().BoolVarP(
-		&doOnAllOptions.NoProgress,
-		"no-progress",
-		"",
-		false,
-		"No progress bar",
-	)
-
-	sourceImagesDeleteAllCmd.Flags().IntVarP(
-		&doOnAllOptions.Concurrency,
-		"concurrency",
-		"",
-		2,
-		"Number of concurrent processes to use for deleting images",
-	)
-	sourceImagesDeleteAllCmd.Flags().BoolVarP(
-		&doOnAllOptions.DryRun,
-		"dry-run",
-		"",
-		false,
-		"Simulate operation, do not delete files on Rokka.io",
-	)
-
-	sourceImagesDeleteAllCmd.Flags().BoolVarP(
-		&doOnAllOptions.NoProgress,
-		"no-progress",
-		"",
-		false,
-		"No progress bar",
-	)
-
-	sourceImagesDeleteAllCmd.Flags().BoolVarP(
-		&doOnAllOptions.Force,
-		"force",
-		"f",
-		false,
-		"No progress bar",
-	)
+	silcFlags := sourceImagesListCmd.Flags()
+	silcFlags.IntVarP(&sourceImagesListOptions.Limit, "limit", "l", 20, "Limit")
+	silcFlags.StringVarP(&sourceImagesListOptions.Offset, "offset", "o", "0", "Offset")
+	silcFlags.StringVar(&sourceImagesListOptions.Hash, "hash", "", "Hash")
+	silcFlags.StringVar(&sourceImagesListOptions.BinaryHash, "binaryHash", "", "Binary hash")
+	silcFlags.StringVar(&sourceImagesListOptions.Size, "size", "", "Size in kilobytes")
+	silcFlags.StringVar(&sourceImagesListOptions.Format, "format", "", "Format")
+	silcFlags.StringVar(&sourceImagesListOptions.Width, "width", "", "Width")
+	silcFlags.StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
+	silcFlags.StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
+	silcFlags.StringVar(&sourceImagesListOptions.Sort, "sort", "", "Sort")
 
 	sourceImagesDeleteCmd.Flags().BoolVar(&binaryHash, "binaryHash", false, "Supplied hash is a binary hash")
 
@@ -432,45 +299,4 @@ func init() {
 
 	sourceImagesUpdateUserMetadataCmd.Flags().StringVar(&userMetadataName, "name", "", "Update only the specified field")
 	sourceImagesDeleteUserMetadataCmd.Flags().StringVar(&userMetadataName, "name", "", "Delete only the specified field")
-}
-
-// askForConfirmation uses Scanln to parse user input. A user must type in "yes" or "no" and
-// then press enter. It has fuzzy matching, so "y", "Y", "yes", "YES", and "Yes" all count as
-// confirmations. If the input is not recognized, it will ask again. The function does not return
-// until it gets a valid response from the user. Typically, you should use fmt to print out a question
-// before calling askForConfirmation. E.g. fmt.Println("WARNING: Are you sure? (yes/no)")
-func askForConfirmation() bool {
-	var response string
-	_, err := fmt.Scanln(&response)
-	if err != nil {
-		logger.Errorf("%s", err)
-	}
-	okayResponses := []string{"y", "Y", "yes", "Yes", "YES"}
-	nokayResponses := []string{"n", "N", "no", "No", "NO"}
-	if containsString(okayResponses, response) {
-		return true
-	} else if containsString(nokayResponses, response) {
-		return false
-	} else {
-		fmt.Println("Please type yes or no and then press enter:")
-		return askForConfirmation()
-	}
-}
-
-// You might want to put the following two functions in a separate utility package.
-
-// posString returns the first index of element in slice.
-// If slice does not contain element, returns -1.
-func posString(slice []string, element string) int {
-	for index, elem := range slice {
-		if elem == element {
-			return index
-		}
-	}
-	return -1
-}
-
-// containsString returns true iff slice contains element
-func containsString(slice []string, element string) bool {
-	return !(posString(slice, element) == -1)
 }

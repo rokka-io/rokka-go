@@ -74,16 +74,6 @@ func sortedKeysFromMap(m map[string]interface{}) []string {
 	return l
 }
 
-// checks if s is in l
-func contains(l []string, s string) bool {
-	for _, v := range l {
-		if s == v {
-			return true
-		}
-	}
-	return false
-}
-
 // ToStringSlice is an internally used function to convert a slice of interfaces to a slice of strings
 func ToStringSlice(list []interface{}) []string {
 	slice := make([]string, len(list))
@@ -108,7 +98,7 @@ func processOptionInput(r *bufio.Reader, props map[string]interface{}, required 
 	fmt.Println()
 	options := props[propName].(map[string]interface{})
 	fmt.Printf("%s (%s)", propName, options["type"])
-	if contains(required, propName) {
+	if ListContains(required, propName) {
 		fmt.Print(" (required)")
 	}
 	fmt.Println()
