@@ -76,7 +76,7 @@ var membershipCreateCmd = &cobra.Command{
 }
 var membershipCreateWithUserCmd = &cobra.Command{
 	Use:                   "createWithUser [org] [roles]",
-	Short:                 "Create new Membership for the current user to an organization with the specified comma seperated  oles (read, write, upload, admin)",
+	Short:                 "Create new Membership for the current user to an organization with the specified comma seperated roles (read, write, upload, admin)",
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"cu"},
 	DisableFlagsInUseLine: true,
