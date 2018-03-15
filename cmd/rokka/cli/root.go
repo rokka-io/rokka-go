@@ -71,13 +71,14 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", p, "Config file to store the API key")
-	rootCmd.PersistentFlags().StringVar(&apiKey, "apiKey", "", "API key")
-	rootCmd.PersistentFlags().StringVar(&apiAddress, "apiAddress", "", "API address")
-	rootCmd.PersistentFlags().BoolVarP(&raw, "raw", "r", false, "Show raw HTTP response")
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose mode")
-	rootCmd.PersistentFlags().StringVar(&responseTemplate, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
-	rootCmd.PersistentFlags().StringVar(&imageHost, "imageHost", defaultImageHost, "Image host used for preview URLs")
+	flags := rootCmd.PersistentFlags()
+	flags.StringVar(&configFile, "config", p, "Config file to store the API key")
+	flags.StringVar(&apiKey, "apiKey", "", "API key")
+	flags.StringVar(&apiAddress, "apiAddress", "", "API address")
+	flags.BoolVarP(&raw, "raw", "r", false, "Show raw HTTP response")
+	flags.BoolVarP(&verbose, "verbose", "v", false, "Enable verbose mode")
+	flags.StringVar(&responseTemplate, "template", "", "Template to be applied to the response (See: https://golang.org/pkg/text/template/)")
+	flags.StringVar(&imageHost, "imageHost", defaultImageHost, "Image host used for preview URLs")
 }
 
 func getPath() (string, error) {
