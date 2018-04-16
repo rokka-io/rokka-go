@@ -20,7 +20,7 @@ import (
 // See: https://rokka.io/documentation/references/searching-images.html#range-filtering
 type ListSourceImagesOptions struct {
 	Limit      int    `url:"limit,omitempty"`
-	Offset     int    `url:"offset,omitempty"`
+	Offset     string `url:"offset,omitempty"`
 	Hash       string `url:"hash,omitempty"`
 	BinaryHash string `url:"binaryhash,omitempty"`
 	// Size can be an int or a range. See: https://github.com/rokka-io/rokka-go/issues/32
