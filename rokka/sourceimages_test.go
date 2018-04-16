@@ -37,7 +37,7 @@ func TestListSourceImagesWithQueryParams(t *testing.T) {
 
 	res, err := c.ListSourceImages(org, ListSourceImagesOptions{
 		Limit:      10,
-		Offset:     20,
+		Offset:     "20",
 		Hash:       "73ecc577d1c51941647378f3460675b6ad7c4fff",
 		BinaryHash: "b9914b12d668dfb6e35fe85fd4a52be1df4aa9ff",
 		Size:       "39189",
