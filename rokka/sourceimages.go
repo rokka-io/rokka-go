@@ -189,6 +189,29 @@ func (c *Client) DeleteSourceImageByBinaryHash(org, binaryHash string) error {
 	return c.Call(req, nil, nil)
 }
 
+// RestoreSourceImage restores a source image by hash.
+//
+// See: https://rokka.io/documentation/references/source-images.html
+func (c *Client) RestoreSourceImage(org, hash string) error {
+	req, err := c.NewRequest(http.MethodPost, fmt.Sprintf("/sourceimages/%s/%s/restore", org, hash), nil, nil)
+	if err != nil {
+		return err
+	}
+	return c.Call(req, nil, nil)
+}
+
+// CopySourceImage copies a source image by hash from one org to another
+//
+// See: https://rokka.io/documentation/references/source-images.html
+func (c *Client) CopySourceImage(sourceOrg, hash string, destinationOrg string) error {
+	req, err := c.NewRequest("COPY", fmt.Sprintf("/sourceimages/%s/%s", sourceOrg, hash), nil, nil)
+	req.Header.Add("Destination", destinationOrg);
+	if err != nil {
+		return err
+	}
+	return c.Call(req, nil, nil)
+}
+
 // CreateSourceImage uploads an image without user or dynamic metadata set.
 //
 // See: https://rokka.io/documentation/references/source-images.html#create-a-source-image
