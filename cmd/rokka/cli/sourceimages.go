@@ -66,6 +66,9 @@ func restoreSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return nil, c.RestoreSourceImage(args[0], args[1])
 }
 
+func copySourceImage(c *rokka.Client, args []string) (interface{}, error) {
+	return nil, c.CopySourceImage(args[0], args[1], args[2])
+}
 
 func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	if _, err := os.Stat(args[1]); os.IsNotExist(err) {
@@ -179,6 +182,15 @@ var sourceImagesRestoreCmd = &cobra.Command{
 	Run: run(restoreSourceImage, "Successfully restored source image.\n"),
 }
 
+var sourceImagesCopyCmd = &cobra.Command{
+	Use:                   "copy [source_org] [hash] [destination_org]",
+	Short:                 "Copy a source image by hash from source_org to destination_org",
+	Args:                  cobra.ExactArgs(3),
+	Aliases:               []string{"cp"},
+	DisableFlagsInUseLine: true,
+	Run: run(copySourceImage, "Successfully copied source image.\n"),
+}
+
 var sourceImagesCreateCmd = &cobra.Command{
 	Use:                   "create [org] [file]",
 	Short:                 "Upload a new image",
@@ -256,6 +268,8 @@ func init() {
 	sourceImagesCmd.AddCommand(sourceImagesDownloadCmd)
 	sourceImagesCmd.AddCommand(sourceImagesDeleteCmd)
 	sourceImagesCmd.AddCommand(sourceImagesRestoreCmd)
+	sourceImagesCmd.AddCommand(sourceImagesCopyCmd)
+
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
 
 	sourceImagesCmd.AddCommand(sourceImagesDynamicMetadataCmd)
