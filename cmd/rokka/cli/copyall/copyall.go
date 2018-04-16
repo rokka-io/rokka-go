@@ -1,11 +1,13 @@
 package copyall
 
 import (
-	"github.com/rokka-io/rokka-go/rokka"
-	"sync"
 	"errors"
+	"sync"
+
+	"github.com/rokka-io/rokka-go/rokka"
 )
 
+//Options general options for the whole copy-all command
 type Options struct {
 	SourceOrganization      string
 	DestinationOrganization string
@@ -13,33 +15,27 @@ type Options struct {
 	Concurrency             int
 }
 
-type ListReturn struct {
+type listReturn struct {
 	Cursor     string
 	ItemsCount int
 }
 
-type ImageDetails struct {
-	Organization string
-	Path         string
-	UserMetadata map[string]interface{}
-}
-
+//CopyResult the results of the copy operation
 type CopyResult struct {
 	RokkaHash string
 	Error     error
 }
 
-
+//StartWorkers starts Copy Workers
 func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult, quit chan bool) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
-
 
 	// Start workers for image copy
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
 			defer waitGroup.Done()
-			CopyWorker(client, images, results, quit, options.SourceOrganization, options.DestinationOrganization, options.DryRun)
+			copyWorker(client, images, results, quit, options.SourceOrganization, options.DestinationOrganization, options.DryRun)
 		}()
 	}
 
@@ -51,7 +47,7 @@ func StartWorkers(options Options, client *rokka.Client, images chan string, res
 
 }
 
-func CopyWorker(
+func copyWorker(
 	client *rokka.Client,
 	imageFiles chan string,
 	results chan CopyResult,
@@ -71,8 +67,6 @@ func CopyWorker(
 			err := executeRokkaCopy(client, hash, sourceOrg, destinationOrg)
 			if err != nil {
 				result.Error = err
-			} else {
-				result.RokkaHash = result.RokkaHash
 			}
 		}
 
@@ -84,6 +78,7 @@ func CopyWorker(
 	}
 }
 
+//Scan starts the scan operation for getting all images
 func Scan(options Options, client *rokka.Client, images chan string, quit chan bool) error {
 	defer func() {
 		close(images)
@@ -91,44 +86,43 @@ func Scan(options Options, client *rokka.Client, images chan string, quit chan b
 	doIt := true
 	cursor := ""
 	for doIt {
-		listReturnValues, err := List(options, client, images, quit, cursor);
+		listReturnValues, err := list(options, client, images, quit, cursor)
 		if err != nil {
 			return err
 		}
 
-		if (listReturnValues.Cursor == "" || cursor == listReturnValues.Cursor || listReturnValues.ItemsCount == 0) {
+		if listReturnValues.Cursor == "" || cursor == listReturnValues.Cursor || listReturnValues.ItemsCount == 0 {
 			doIt = false
 		} else {
-			cursor = listReturnValues.Cursor;
+			cursor = listReturnValues.Cursor
 		}
 	}
-	return nil;
+	return nil
 }
 
-func List(options Options, client *rokka.Client, images chan string, quit chan bool, cursor string) (ListReturn, error) {
+func list(options Options, client *rokka.Client, images chan string, quit chan bool, cursor string) (listReturn, error) {
 	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
-	listReturn := ListReturn{"", 0}
-	if (cursor != "") {
+	listReturnValues := listReturn{"", 0}
+	if cursor != "" {
 		listSourceImagesOptions.Offset = cursor
 	}
 	res, err := client.ListSourceImages(options.SourceOrganization, listSourceImagesOptions)
 	if err != nil {
-		return listReturn, err
+		return listReturnValues, err
 	}
 	for _, element := range res.Items {
 		// Add the image to the list of ones to be uploaded
 		select {
 		case images <- element.Hash:
 		case <-quit:
-			return listReturn, errors.New("image copy cancelled")
+			return listReturnValues, errors.New("image copy cancelled")
 		}
 	}
-	listReturn.Cursor = res.Cursor
-	listReturn.ItemsCount = len(res.Items)
-	return listReturn, nil
+	listReturnValues.Cursor = res.Cursor
+	listReturnValues.ItemsCount = len(res.Items)
+	return listReturnValues, nil
 }
 
-
-func executeRokkaCopy(client *rokka.Client, hash string, sourceOrg string, destinationOrg string) (error) {
+func executeRokkaCopy(client *rokka.Client, hash string, sourceOrg string, destinationOrg string) error {
 	return client.CopySourceImage(sourceOrg, hash, destinationOrg)
 }

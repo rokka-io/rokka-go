@@ -8,14 +8,14 @@ import (
 	"os"
 	"path"
 
+	"github.com/rokka-io/rokka-go/cmd/rokka/cli/copyall"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
-	"github.com/rokka-io/rokka-go/cmd/rokka/cli/copyall"
 )
 
 var (
 	sourceImagesListOptions rokka.ListSourceImagesOptions
-	copyAllOptions 			copyall.Options
+	copyAllOptions          copyall.Options
 	dynamicMetadataOptions  rokka.DynamicMetadataOptions
 	userMetadataName        string
 	binaryHash              bool
@@ -89,13 +89,13 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 	// Collect results and display progress
 
-	counter := 0;
+	counter := 0
 	for result := range results {
 		if result.Error != nil {
 			logger.Errorf("Copy failed for %s! %s\n", result.RokkaHash, result.Error)
 		} else {
 			logger.Printf("Copied %s\n", result.RokkaHash)
-			counter++;
+			counter++
 		}
 	}
 	return struct {
