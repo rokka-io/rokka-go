@@ -183,8 +183,8 @@ var sourceImagesRestoreCmd = &cobra.Command{
 }
 
 var sourceImagesCopyCmd = &cobra.Command{
-	Use:                   "copy [source_org] [hash] [destination_org]",
-	Short:                 "Copy a source image by hash from source_org to destination_org",
+	Use:                   "copy [sourceOrg] [hash] [destinationOrg]",
+	Short:                 "Copy a source image by hash from source organization to destination organization",
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"cp"},
 	DisableFlagsInUseLine: true,

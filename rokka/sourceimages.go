@@ -203,9 +203,9 @@ func (c *Client) RestoreSourceImage(org, hash string) error {
 // CopySourceImage copies a source image by hash from one org to another
 //
 // See: https://rokka.io/documentation/references/source-images.html
-func (c *Client) CopySourceImage(source_org, hash string, destination_org string) error {
-	req, err := c.NewRequest("COPY", fmt.Sprintf("/sourceimages/%s/%s", source_org, hash), nil, nil)
-	req.Header.Add("Destination", destination_org);
+func (c *Client) CopySourceImage(sourceOrg, hash string, destinationOrg string) error {
+	req, err := c.NewRequest("COPY", fmt.Sprintf("/sourceimages/%s/%s", sourceOrg, hash), nil, nil)
+	req.Header.Add("Destination", destinationOrg);
 	if err != nil {
 		return err
 	}
