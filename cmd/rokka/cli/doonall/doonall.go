@@ -22,17 +22,18 @@ type CopyResult struct {
 	Error     error
 }
 
-type UpdateFunc func(client *rokka.Client, hash string, options Options) (err error)
+// CallbackFunc is run on each image of an organization
+type CallbackFunc func(client *rokka.Client, hash string, options Options) (err error)
 
 // StartWorkers starts Copy Workers
-func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult, updateFunc UpdateFunc) {
+func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult, callback CallbackFunc) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
 	// Start workers for image copy
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
 			defer waitGroup.Done()
-			copyWorker(client, images, results, options, updateFunc)
+			copyWorker(client, images, results, options, callback)
 		}()
 	}
 	// Start a go-routine to to close the result channel as soon as all workers are done
@@ -47,13 +48,13 @@ func copyWorker(
 	imageFiles chan string,
 	results chan CopyResult,
 	options Options,
-	updateFunc UpdateFunc) {
+	callback CallbackFunc) {
 	for hash := range imageFiles {
 		result := CopyResult{
 			RokkaHash: hash,
 		}
 		if !options.DryRun {
-			result.Error = updateFunc(client, hash, options)
+			result.Error = callback(client, hash, options)
 		}
 		results <- result
 	}
@@ -91,10 +92,12 @@ func list(options Options, client *rokka.Client, images chan string, cursor stri
 	return res.Cursor, len(res.Items), err
 }
 
+//ExecuteRokkaCopy copies a single image from one org to another
 func ExecuteRokkaCopy(client *rokka.Client, hash string, options Options) error {
 	return client.CopySourceImage(options.SourceOrganization, hash, options.DestinationOrganization)
 }
 
+//ExecuteRokkaDelete delete one single image from the org
 func ExecuteRokkaDelete(client *rokka.Client, hash string, options Options) error {
 	return client.DeleteSourceImage(options.SourceOrganization, hash)
 }

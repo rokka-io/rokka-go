@@ -84,7 +84,7 @@ func deleteAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaDelete, fmt.Sprintf("Deleting of %%d source images on organization %s.\n", args[0]))
 }
 
-func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doonall.UpdateFunc, tmpl string) (interface{}, error) {
+func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doonall.CallbackFunc, tmpl string) (interface{}, error) {
 	images := make(chan string)
 	results := make(chan doonall.CopyResult)
 
@@ -102,7 +102,7 @@ func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doo
 	if !options.Force {
 		logger.Errorf("Are you sure? (yes/no): ")
 		if !askForConfirmation() {
-			return nil, errors.New("Operation cancelled.")
+			return nil, errors.New("Operation cancelled")
 		}
 	}
 	bar := pb.New(res.Total)
