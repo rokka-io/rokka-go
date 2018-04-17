@@ -446,7 +446,7 @@ func askForConfirmation() bool {
 	var response string
 	_, err := fmt.Scanln(&response)
 	if err != nil {
-		logger.Errorf("%w", err)
+		logger.Errorf("%s", err)
 	}
 	okayResponses := []string{"y", "Y", "yes", "Yes", "YES"}
 	nokayResponses := []string{"n", "N", "no", "No", "NO"}
