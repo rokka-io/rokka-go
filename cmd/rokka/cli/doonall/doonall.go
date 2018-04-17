@@ -1,4 +1,4 @@
-package doall
+package doonall
 
 import (
 	"sync"
