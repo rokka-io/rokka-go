@@ -91,6 +91,7 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	}
 	bar := pb.New(res.Total)
 	bar.ShowSpeed = true
+	bar.Output = logger.StdErr
 	if copyAllOptions.NoProgress {
 		bar.NotPrint = true
 	}
