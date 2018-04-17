@@ -13,6 +13,7 @@ type Options struct {
 	DryRun                  bool
 	Concurrency             int
 	NoProgress              bool
+	Force                   bool
 }
 
 // CopyResult contains the result of the operatio
@@ -92,4 +93,8 @@ func list(options Options, client *rokka.Client, images chan string, cursor stri
 
 func ExecuteRokkaCopy(client *rokka.Client, hash string, options Options) error {
 	return client.CopySourceImage(options.SourceOrganization, hash, options.DestinationOrganization)
+}
+
+func ExecuteRokkaDelete(client *rokka.Client, hash string, options Options) error {
+	return client.DeleteSourceImage(options.SourceOrganization, hash)
 }
