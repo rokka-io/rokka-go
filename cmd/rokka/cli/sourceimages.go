@@ -96,7 +96,7 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	}
 	// Scan folders and files
 	go copyall.Scan(copyAllOptions, rokkaClient, images)
-	fmt.Fprintf(os.Stderr, "Copying of %d source images started. \n", res.Total)
+	logger.Errorf("Copying of %d source images started. \n", res.Total)
 	bar.Start()
 	for result := range results {
 		if result.Error != nil {
