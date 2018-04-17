@@ -1,4 +1,4 @@
-package copyall
+package doall
 
 import (
 	"sync"

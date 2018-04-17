@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/rokka-io/rokka-go/cmd/rokka/cli/copyall"
+	"github.com/rokka-io/rokka-go/cmd/rokka/cli/doall"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
 	"gopkg.in/cheggaaa/pb.v1"
@@ -16,7 +16,7 @@ import (
 
 var (
 	sourceImagesListOptions rokka.ListSourceImagesOptions
-	doOnAllOptions          copyall.Options
+	doOnAllOptions          doall.Options
 	dynamicMetadataOptions  rokka.DynamicMetadataOptions
 	userMetadataName        string
 	binaryHash              bool
@@ -76,19 +76,19 @@ func copySourceImage(c *rokka.Client, args []string) (interface{}, error) {
 func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	doOnAllOptions.SourceOrganization = args[0]
 	doOnAllOptions.DestinationOrganization = args[1]
-	return doOnAllSourceImage(c, doOnAllOptions, copyall.ExecuteRokkaCopy, fmt.Sprintf("Copying of %%d source images from organization %s. to %s\n", args[0], args[1]))
+	return doOnAllSourceImage(c, doOnAllOptions, doall.ExecuteRokkaCopy, fmt.Sprintf("Copying of %%d source images from organization %s. to %s\n", args[0], args[1]))
 }
 
 func deleteAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	doOnAllOptions.SourceOrganization = args[0]
-	return doOnAllSourceImage(c, doOnAllOptions, copyall.ExecuteRokkaDelete, fmt.Sprintf("Deleting of %%d source images on organization %s.\n", args[0]))
+	return doOnAllSourceImage(c, doOnAllOptions, doall.ExecuteRokkaDelete, fmt.Sprintf("Deleting of %%d source images on organization %s.\n", args[0]))
 }
 
-func doOnAllSourceImage(c *rokka.Client, options copyall.Options, updateFunc copyall.UpdateFunc, tmpl string) (interface{}, error) {
+func doOnAllSourceImage(c *rokka.Client, options doall.Options, updateFunc doall.UpdateFunc, tmpl string) (interface{}, error) {
 	images := make(chan string)
-	results := make(chan copyall.CopyResult)
+	results := make(chan doall.CopyResult)
 
-	copyall.StartWorkers(options, rokkaClient, images, results, updateFunc)
+	doall.StartWorkers(options, rokkaClient, images, results, updateFunc)
 
 	var counterError, counterSuccess int64 = 0, 0
 	// get the total count for progress bar
@@ -113,7 +113,7 @@ func doOnAllSourceImage(c *rokka.Client, options copyall.Options, updateFunc cop
 	}
 
 	// Scan folders and files
-	go copyall.Scan(doOnAllOptions, rokkaClient, images)
+	go doall.Scan(doOnAllOptions, rokkaClient, images)
 	bar.Start()
 	for result := range results {
 		if result.Error != nil {
