@@ -79,11 +79,9 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 	copyAllOptions.SourceOrganization = args[0]
 	copyAllOptions.DestinationOrganization = args[1]
-
 	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results)
 
 	var counterError, counterSuccess int64 = 0, 0
-
 	// get the total count for progress bar
 	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
 	listSourceImagesOptions.Limit = 1
@@ -96,10 +94,8 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	if copyAllOptions.NoProgress {
 		bar.NotPrint = true
 	}
-
 	// Scan folders and files
 	go copyall.Scan(copyAllOptions, rokkaClient, images)
-
 	fmt.Fprintf(os.Stderr, "Copying of %d source images started. \n", res.Total)
 	bar.Start()
 	for result := range results {

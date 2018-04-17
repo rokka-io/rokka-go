@@ -25,7 +25,6 @@ type CopyResult struct {
 func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
-
 	// Start workers for image copy
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
@@ -33,13 +32,11 @@ func StartWorkers(options Options, client *rokka.Client, images chan string, res
 			copyWorker(client, images, results, options.SourceOrganization, options.DestinationOrganization, options.DryRun)
 		}()
 	}
-
 	// Start a go-routine to to close the result channel as soon as all workers are done
 	go func() {
 		waitGroup.Wait()
 		close(results)
 	}()
-
 }
 
 func copyWorker(
@@ -54,13 +51,10 @@ func copyWorker(
 		result := CopyResult{
 			RokkaHash: hash,
 		}
-
 		if !dryRun {
 			result.Error = executeRokkaCopy(client, hash, sourceOrg, destinationOrg)
 		}
-
 		results <- result
-
 	}
 }
 
@@ -73,7 +67,6 @@ func Scan(options Options, client *rokka.Client, images chan string) error {
 		if err != nil {
 			return err
 		}
-
 		if newCursor == "" || cursor == newCursor || itemsCount == 0 {
 			return nil
 		}
