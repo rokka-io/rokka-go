@@ -11,6 +11,7 @@ import (
 	"github.com/rokka-io/rokka-go/cmd/rokka/cli/copyall"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 var (
@@ -81,23 +82,39 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results)
 
+	var counterError, counterSuccess int64 = 0, 0
+
+	// get the total count for progress bar
+	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
+	listSourceImagesOptions.Limit = 1
+	res, err := c.ListSourceImages(copyAllOptions.SourceOrganization, listSourceImagesOptions)
+	if err != nil {
+		return nil, err
+	}
+	bar := pb.New(res.Total)
+	bar.ShowSpeed = true
+	if copyAllOptions.NoProgress {
+		bar.NotPrint = true
+	}
+
 	// Scan folders and files
 	go copyall.Scan(copyAllOptions, rokkaClient, images)
 
-	counterSuccess := 0
-	counterError := 0
+	fmt.Fprintf(os.Stderr, "Copying of %d source images started. \n", res.Total)
+	bar.Start()
 	for result := range results {
 		if result.Error != nil {
-			logger.Errorf("Copy failed for %s! %s\n", result.RokkaHash, result.Error)
 			counterError++
 		} else {
-			logger.Errorf("Copied %s\n", result.RokkaHash)
 			counterSuccess++
 		}
+		bar.Increment()
 	}
+	bar.Finish()
+
 	return struct {
-		SuccessfullyUploaded int
-		ErrorUploaded        int
+		SuccessfullyUploaded int64
+		ErrorUploaded        int64
 	}{counterSuccess, counterError}, nil
 }
 
@@ -346,6 +363,14 @@ func init() {
 		"",
 		false,
 		"Simulate operation, do not copy files on Rokka.io",
+	)
+
+	sourceImagesCopyAllCmd.Flags().BoolVarP(
+		&copyAllOptions.NoProgress,
+		"no-progress",
+		"",
+		false,
+		"No progress bar",
 	)
 
 	sourceImagesDeleteCmd.Flags().BoolVar(&binaryHash, "binaryHash", false, "Supplied hash is a binary hash")

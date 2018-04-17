@@ -12,6 +12,7 @@ type Options struct {
 	DestinationOrganization string
 	DryRun                  bool
 	Concurrency             int
+	NoProgress              bool
 }
 
 // CopyResult contains the result of the operatio
@@ -78,7 +79,6 @@ func Scan(options Options, client *rokka.Client, images chan string) error {
 		}
 		cursor = newCursor
 	}
-	return nil
 }
 
 func list(options Options, client *rokka.Client, images chan string, cursor string) (string, int, error) {
