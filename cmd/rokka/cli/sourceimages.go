@@ -79,7 +79,7 @@ func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 	copyAllOptions.SourceOrganization = args[0]
 	copyAllOptions.DestinationOrganization = args[1]
-	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results)
+	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results, copyall.ExecuteRokkaCopy)
 
 	var counterError, counterSuccess int64 = 0, 0
 	// get the total count for progress bar

@@ -21,15 +21,17 @@ type CopyResult struct {
 	Error     error
 }
 
+type UpdateFunc func(client *rokka.Client, hash string, options Options) (err error)
+
 // StartWorkers starts Copy Workers
-func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult) {
+func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult, updateFunc UpdateFunc) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
 	// Start workers for image copy
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
 			defer waitGroup.Done()
-			copyWorker(client, images, results, options.SourceOrganization, options.DestinationOrganization, options.DryRun)
+			copyWorker(client, images, results, options, updateFunc)
 		}()
 	}
 	// Start a go-routine to to close the result channel as soon as all workers are done
@@ -43,16 +45,14 @@ func copyWorker(
 	client *rokka.Client,
 	imageFiles chan string,
 	results chan CopyResult,
-	sourceOrg string,
-	destinationOrg string,
-	dryRun bool,
-) {
+	options Options,
+	updateFunc UpdateFunc) {
 	for hash := range imageFiles {
 		result := CopyResult{
 			RokkaHash: hash,
 		}
-		if !dryRun {
-			result.Error = executeRokkaCopy(client, hash, sourceOrg, destinationOrg)
+		if !options.DryRun {
+			result.Error = updateFunc(client, hash, options)
 		}
 		results <- result
 	}
@@ -90,6 +90,6 @@ func list(options Options, client *rokka.Client, images chan string, cursor stri
 	return res.Cursor, len(res.Items), err
 }
 
-func executeRokkaCopy(client *rokka.Client, hash string, sourceOrg string, destinationOrg string) error {
-	return client.CopySourceImage(sourceOrg, hash, destinationOrg)
+func ExecuteRokkaCopy(client *rokka.Client, hash string, options Options) error {
+	return client.CopySourceImage(options.SourceOrganization, hash, options.DestinationOrganization)
 }
