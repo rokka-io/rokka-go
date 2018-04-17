@@ -14,6 +14,12 @@
   version = "v1.0"
 
 [[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/segmentio/go-camelcase"
   packages = ["."]
@@ -31,9 +37,21 @@
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "ecfd8b563e1320e7282dccf28ad48ec2c68aaebf"
+
+[[projects]]
+  name = "gopkg.in/cheggaaa/pb.v1"
+  packages = ["."]
+  revision = "72b964305fba1230d3d818711138195f22b9ceea"
+  version = "v1.0.22"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8ae1daaf58ef27b340b03ad434161491bf507d568d75de3f5b3f8332786434d2"
+  inputs-digest = "535d6a9a686274349e3ae9e7f213137b744a7b490d3a33f52ce69b7408b27219"
   solver-name = "gps-cdcl"
   solver-version = 1

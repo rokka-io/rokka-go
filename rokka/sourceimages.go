@@ -20,7 +20,7 @@ import (
 // See: https://rokka.io/documentation/references/searching-images.html#range-filtering
 type ListSourceImagesOptions struct {
 	Limit      int    `url:"limit,omitempty"`
-	Offset     int    `url:"offset,omitempty"`
+	Offset     string `url:"offset,omitempty"`
 	Hash       string `url:"hash,omitempty"`
 	BinaryHash string `url:"binaryhash,omitempty"`
 	// Size can be an int or a range. See: https://github.com/rokka-io/rokka-go/issues/32
@@ -205,7 +205,7 @@ func (c *Client) RestoreSourceImage(org, hash string) error {
 // See: https://rokka.io/documentation/references/source-images.html
 func (c *Client) CopySourceImage(sourceOrg, hash string, destinationOrg string) error {
 	req, err := c.NewRequest("COPY", fmt.Sprintf("/sourceimages/%s/%s", sourceOrg, hash), nil, nil)
-	req.Header.Add("Destination", destinationOrg);
+	req.Header.Add("Destination", destinationOrg)
 	if err != nil {
 		return err
 	}

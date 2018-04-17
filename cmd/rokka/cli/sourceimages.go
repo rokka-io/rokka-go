@@ -8,12 +8,15 @@ import (
 	"os"
 	"path"
 
+	"github.com/rokka-io/rokka-go/cmd/rokka/cli/copyall"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 var (
 	sourceImagesListOptions rokka.ListSourceImagesOptions
+	copyAllOptions          copyall.Options
 	dynamicMetadataOptions  rokka.DynamicMetadataOptions
 	userMetadataName        string
 	binaryHash              bool
@@ -68,6 +71,48 @@ func restoreSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 func copySourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return nil, c.CopySourceImage(args[0], args[1], args[2])
+}
+
+func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
+	images := make(chan string)
+	results := make(chan copyall.CopyResult)
+
+	copyAllOptions.SourceOrganization = args[0]
+	copyAllOptions.DestinationOrganization = args[1]
+	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results)
+
+	var counterError, counterSuccess int64 = 0, 0
+	// get the total count for progress bar
+	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
+	listSourceImagesOptions.Limit = 1
+	res, err := c.ListSourceImages(copyAllOptions.SourceOrganization, listSourceImagesOptions)
+	if err != nil {
+		return nil, err
+	}
+	bar := pb.New(res.Total)
+	bar.ShowSpeed = true
+	bar.Output = logger.StdErr
+	if copyAllOptions.NoProgress {
+		bar.NotPrint = true
+	}
+	// Scan folders and files
+	go copyall.Scan(copyAllOptions, rokkaClient, images)
+	logger.Errorf("Copying of %d source images started. \n", res.Total)
+	bar.Start()
+	for result := range results {
+		if result.Error != nil {
+			counterError++
+		} else {
+			counterSuccess++
+		}
+		bar.Increment()
+	}
+	bar.Finish()
+
+	return struct {
+		SuccessfullyUploaded int64
+		ErrorUploaded        int64
+	}{counterSuccess, counterError}, nil
 }
 
 func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
@@ -191,6 +236,15 @@ var sourceImagesCopyCmd = &cobra.Command{
 	Run: run(copySourceImage, "Successfully copied source image.\n"),
 }
 
+var sourceImagesCopyAllCmd = &cobra.Command{
+	Use:                   "copy-all [sourceOrg] [destinationOrg]",
+	Short:                 "Copy all source images from on org to another",
+	Args:                  cobra.ExactArgs(2),
+	Aliases:               []string{"cpa"},
+	DisableFlagsInUseLine: true,
+	Run: run(copyAllSourceImage, "Successfully copied {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
+}
+
 var sourceImagesCreateCmd = &cobra.Command{
 	Use:                   "create [org] [file]",
 	Short:                 "Upload a new image",
@@ -272,6 +326,8 @@ func init() {
 
 	sourceImagesCmd.AddCommand(sourceImagesCreateCmd)
 
+	sourceImagesCmd.AddCommand(sourceImagesCopyAllCmd)
+
 	sourceImagesCmd.AddCommand(sourceImagesDynamicMetadataCmd)
 	sourceImagesDynamicMetadataCmd.AddCommand(sourceImagesAddDynamicMetadataCmd)
 	sourceImagesDynamicMetadataCmd.AddCommand(sourceImagesDeleteDynamicMetadataCmd)
@@ -281,7 +337,7 @@ func init() {
 	sourceImagesUserMetadataCmd.AddCommand(sourceImagesDeleteUserMetadataCmd)
 
 	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Limit, "limit", "l", 20, "Limit")
-	sourceImagesListCmd.Flags().IntVarP(&sourceImagesListOptions.Offset, "offset", "o", 0, "Offset")
+	sourceImagesListCmd.Flags().StringVarP(&sourceImagesListOptions.Offset, "offset", "o", "0", "Offset")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Hash, "hash", "", "Hash")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.BinaryHash, "binaryHash", "", "Binary hash")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Size, "size", "", "Size in kilobytes")
@@ -290,6 +346,29 @@ func init() {
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Height, "height", "", "Height")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Created, "created", "", "Created")
 	sourceImagesListCmd.Flags().StringVar(&sourceImagesListOptions.Sort, "sort", "", "Sort")
+
+	sourceImagesCopyAllCmd.Flags().IntVarP(
+		&copyAllOptions.Concurrency,
+		"concurrency",
+		"",
+		2,
+		"Number of concurrent processes to use for uploading images",
+	)
+	sourceImagesCopyAllCmd.Flags().BoolVarP(
+		&copyAllOptions.DryRun,
+		"dry-run",
+		"",
+		false,
+		"Simulate operation, do not copy files on Rokka.io",
+	)
+
+	sourceImagesCopyAllCmd.Flags().BoolVarP(
+		&copyAllOptions.NoProgress,
+		"no-progress",
+		"",
+		false,
+		"No progress bar",
+	)
 
 	sourceImagesDeleteCmd.Flags().BoolVar(&binaryHash, "binaryHash", false, "Supplied hash is a binary hash")
 
