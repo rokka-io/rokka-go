@@ -6,7 +6,7 @@ import (
 	"github.com/rokka-io/rokka-go/rokka"
 )
 
-//Options general options for the whole copy-all command
+// Options general options for the whole copy-all command
 type Options struct {
 	SourceOrganization      string
 	DestinationOrganization string
