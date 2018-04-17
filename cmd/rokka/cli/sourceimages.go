@@ -70,38 +70,35 @@ func restoreSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 
 func copySourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	return nil, c.CopySourceImage(args[0], args[1], args[2])
-
 }
 
 func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
-
 	images := make(chan string)
 	results := make(chan copyall.CopyResult)
-	quit := make(chan bool)
 
 	copyAllOptions.SourceOrganization = args[0]
 	copyAllOptions.DestinationOrganization = args[1]
 
-	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results, quit)
+	copyall.StartWorkers(copyAllOptions, rokkaClient, images, results)
 
 	// Scan folders and files
-	go copyall.Scan(copyAllOptions, rokkaClient, images, quit)
+	go copyall.Scan(copyAllOptions, rokkaClient, images)
 
-	// Collect results and display progress
-
-	counter := 0
+	counterSuccess := 0
+	counterError := 0
 	for result := range results {
 		if result.Error != nil {
 			logger.Errorf("Copy failed for %s! %s\n", result.RokkaHash, result.Error)
+			counterError++
 		} else {
-			logger.Printf("Copied %s\n", result.RokkaHash)
-			counter++
+			logger.Errorf("Copied %s\n", result.RokkaHash)
+			counterSuccess++
 		}
 	}
 	return struct {
 		SuccessfullyUploaded int
-	}{counter}, nil
-
+		ErrorUploaded        int
+	}{counterSuccess, counterError}, nil
 }
 
 func createSourceImage(c *rokka.Client, args []string) (interface{}, error) {
@@ -231,7 +228,7 @@ var sourceImagesCopyAllCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"cpa"},
 	DisableFlagsInUseLine: true,
-	Run: run(copyAllSourceImage, "Successfully copied {{.SuccessfullyUploaded}} source images.\n"),
+	Run: run(copyAllSourceImage, "Successfully copied {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
 }
 
 var sourceImagesCreateCmd = &cobra.Command{
@@ -340,7 +337,7 @@ func init() {
 		&copyAllOptions.Concurrency,
 		"concurrency",
 		"",
-		1,
+		2,
 		"Number of concurrent processes to use for uploading images",
 	)
 	sourceImagesCopyAllCmd.Flags().BoolVarP(
@@ -348,7 +345,7 @@ func init() {
 		"dry-run",
 		"",
 		false,
-		"Simulate operation, do not upload files to Rokka.io",
+		"Simulate operation, do not copy files on Rokka.io",
 	)
 
 	sourceImagesDeleteCmd.Flags().BoolVar(&binaryHash, "binaryHash", false, "Supplied hash is a binary hash")

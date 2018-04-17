@@ -1,7 +1,6 @@
 package copyall
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/rokka-io/rokka-go/rokka"
@@ -15,19 +14,14 @@ type Options struct {
 	Concurrency             int
 }
 
-type listReturn struct {
-	Cursor     string
-	ItemsCount int
-}
-
-//CopyResult the results of the copy operation
+// CopyResult contains the result of the operatio
 type CopyResult struct {
 	RokkaHash string
 	Error     error
 }
 
-//StartWorkers starts Copy Workers
-func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult, quit chan bool) {
+// StartWorkers starts Copy Workers
+func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
 
@@ -35,7 +29,7 @@ func StartWorkers(options Options, client *rokka.Client, images chan string, res
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
 			defer waitGroup.Done()
-			copyWorker(client, images, results, quit, options.SourceOrganization, options.DestinationOrganization, options.DryRun)
+			copyWorker(client, images, results, options.SourceOrganization, options.DestinationOrganization, options.DryRun)
 		}()
 	}
 
@@ -51,7 +45,6 @@ func copyWorker(
 	client *rokka.Client,
 	imageFiles chan string,
 	results chan CopyResult,
-	quit chan bool,
 	sourceOrg string,
 	destinationOrg string,
 	dryRun bool,
@@ -61,66 +54,47 @@ func copyWorker(
 			RokkaHash: hash,
 		}
 
-		if dryRun {
-			result.RokkaHash = "DRY-RUN-HASH"
-		} else {
-			err := executeRokkaCopy(client, hash, sourceOrg, destinationOrg)
-			if err != nil {
-				result.Error = err
-			}
+		if !dryRun {
+			result.Error = executeRokkaCopy(client, hash, sourceOrg, destinationOrg)
 		}
 
-		select {
-		case results <- result:
-		case <-quit: // If we get a quit message, end the worker!
-			return
-		}
+		results <- result
+
 	}
 }
 
-//Scan starts the scan operation for getting all images
-func Scan(options Options, client *rokka.Client, images chan string, quit chan bool) error {
-	defer func() {
-		close(images)
-	}()
-	doIt := true
+// Scan starts the scan operation for getting all images
+func Scan(options Options, client *rokka.Client, images chan string) error {
+	defer close(images)
 	cursor := ""
-	for doIt {
-		listReturnValues, err := list(options, client, images, quit, cursor)
+	for {
+		newCursor, itemsCount, err := list(options, client, images, cursor)
 		if err != nil {
 			return err
 		}
 
-		if listReturnValues.Cursor == "" || cursor == listReturnValues.Cursor || listReturnValues.ItemsCount == 0 {
-			doIt = false
-		} else {
-			cursor = listReturnValues.Cursor
+		if newCursor == "" || cursor == newCursor || itemsCount == 0 {
+			return nil
 		}
+		cursor = newCursor
 	}
 	return nil
 }
 
-func list(options Options, client *rokka.Client, images chan string, quit chan bool, cursor string) (listReturn, error) {
+func list(options Options, client *rokka.Client, images chan string, cursor string) (string, int, error) {
 	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
-	listReturnValues := listReturn{"", 0}
 	if cursor != "" {
 		listSourceImagesOptions.Offset = cursor
 	}
 	res, err := client.ListSourceImages(options.SourceOrganization, listSourceImagesOptions)
 	if err != nil {
-		return listReturnValues, err
+		return "", 0, err
 	}
 	for _, element := range res.Items {
-		// Add the image to the list of ones to be uploaded
-		select {
-		case images <- element.Hash:
-		case <-quit:
-			return listReturnValues, errors.New("image copy cancelled")
-		}
+		// Add the image to the list of ones to be copied
+		images <- element.Hash
 	}
-	listReturnValues.Cursor = res.Cursor
-	listReturnValues.ItemsCount = len(res.Items)
-	return listReturnValues, nil
+	return res.Cursor, len(res.Items), err
 }
 
 func executeRokkaCopy(client *rokka.Client, hash string, sourceOrg string, destinationOrg string) error {
