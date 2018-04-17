@@ -92,12 +92,12 @@ func list(options Options, client *rokka.Client, images chan string, cursor stri
 	return res.Cursor, len(res.Items), err
 }
 
-//ExecuteRokkaCopy copies a single image from one org to another
+// ExecuteRokkaCopy copies a single image from one org to another
 func ExecuteRokkaCopy(client *rokka.Client, hash string, options Options) error {
 	return client.CopySourceImage(options.SourceOrganization, hash, options.DestinationOrganization)
 }
 
-//ExecuteRokkaDelete delete one single image from the org
+// ExecuteRokkaDelete delete one single image from the org
 func ExecuteRokkaDelete(client *rokka.Client, hash string, options Options) error {
 	return client.DeleteSourceImage(options.SourceOrganization, hash)
 }
