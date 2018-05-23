@@ -1,5 +1,10 @@
 package massupload
 
+import (
+	"path/filepath"
+	"strings"
+)
+
 // fixpath returns an absolute path on the current OS, so we can open long
 // file names. See Restic file_windows.go
 func Fixpath(name string) string {

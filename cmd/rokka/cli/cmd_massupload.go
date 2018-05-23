@@ -3,14 +3,15 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"sync"
+
 	"github.com/rokka-io/rokka-go/cmd/rokka/cli/massupload"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
-	"sync"
-	"sort"
-	"strings"
 )
 
 type uploadResult struct {
@@ -19,19 +20,15 @@ type uploadResult struct {
 	Error     error
 }
 
-type imageDetails struct {
-	Organization string
-	Path         string
-	UserMetadata map[string]interface{}
-}
-
-type MassuploadOptions struct {
-	Organization string
-	BasePath     string
-	Recursive    bool
-	DryRun       bool
-	Extensions   []string
-	Concurrency  int
+type massuploadOptions struct {
+	Organization  string
+	BasePath      string
+	Recursive     bool
+	DryRun        bool
+	Extensions    []string
+	Concurrency   int
+	Template      string
+	TemplateError string
 }
 
 var massuploadCmd = &cobra.Command{
@@ -39,56 +36,61 @@ var massuploadCmd = &cobra.Command{
 	Short: "Upload all images from a folder to rokka",
 	Args:  cobra.ExactArgs(2),
 	DisableFlagsInUseLine: true,
-
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		massuploadOptions.Organization = args[0]
-		massuploadOptions.BasePath = args[1]
-
-		return massuploadOptions.validate()
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return runMassUpload(rokkaClient, massuploadOptions)
-	},
+	Run: run(massUpload, "Uploaded images: {{.TotalUploads}}\n"),
 }
 
-var massuploadOptions MassuploadOptions
+var options massuploadOptions
 
 func init() {
 	rootCmd.AddCommand(massuploadCmd)
 
 	flags := massuploadCmd.Flags()
 	flags.BoolVarP(
-		&massuploadOptions.Recursive,
+		&options.Recursive,
 		"recursive",
 		"",
 		false,
 		"Recurse over the folder",
 	)
 	flags.StringSliceVarP(
-		&massuploadOptions.Extensions,
+		&options.Extensions,
 		"extensions",
 		"",
 		[]string{"gif", "jpg", "png"},
 		"Only upload the given file extensions --extensions=gif,jpg",
 	)
 	flags.IntVarP(
-		&massuploadOptions.Concurrency,
+		&options.Concurrency,
 		"concurrency",
 		"",
 		1,
 		"Number of concurrent processes to use for uploading images",
 	)
 	flags.BoolVarP(
-		&massuploadOptions.DryRun,
+		&options.DryRun,
 		"dry-run",
 		"",
 		false,
 		"Simulate operation, do not upload files to Rokka.io",
 	)
+	flags.StringVarP(
+		&options.Template,
+		"template-success",
+		"",
+		"Uploaded {{.Path}} {{.RokkaHash}}\n",
+		"Template to be applied to successful uploads (See: https://golang.org/pkg/text/template/)",
+	)
+	flags.StringVarP(
+		&options.TemplateError,
+		"template-error",
+		"",
+		"Failure for {{.Path}} {{.Error}}\n",
+		"Template to be applied to error uploads (See: https://golang.org/pkg/text/template/)",
+	)
 }
 
 // Validate the MassuploadOptions: returns an error, or nil if everything is OK
-func (m *MassuploadOptions) validate() error {
+func (m *massuploadOptions) validate() error {
 	if m.Organization == "" {
 		return errors.New("the 'organization' can not be empty")
 	}
@@ -116,8 +118,15 @@ func (m *MassuploadOptions) validate() error {
 	return nil
 }
 
-func runMassUpload(client *rokka.Client, options MassuploadOptions) error {
-	logger.Printf("Starting!\n%#v\n", options)
+func massUpload(c *rokka.Client, args []string) (interface{}, error) {
+	options.Organization = args[0]
+	options.BasePath = args[1]
+
+	validation := options.validate()
+
+	if nil != validation {
+		return nil, validation
+	}
 
 	images := make(chan string)
 	results := make(chan uploadResult)
@@ -127,19 +136,44 @@ func runMassUpload(client *rokka.Client, options MassuploadOptions) error {
 	// Scan folders and files
 	go scan(options.BasePath, images, options.Recursive, options.Extensions)
 
+	totalUploads := 0
+	totalFailures := 0
+
+	okReporter, err := massupload.BuildReporter(options.Template, logger.StdOut)
+	if err != nil {
+		logErrorAndExit(err)
+	}
+
+	errorReporter, err := massupload.BuildReporter(options.TemplateError, logger.StdOut)
+	if err != nil {
+		logErrorAndExit(err)
+	}
+
 	// Collect results and display progress
 	for result := range results {
-		if result.Error != nil {
-			logger.Errorf("Upload failed for %s! %s\n", filepath.Base(result.Path), result.Error)
+		// Rendering via template the successful uploads, or failures
+		if nil != result.Error {
+			totalFailures += 1
+			err := errorReporter.Report(result)
+			if err != nil {
+				logErrorAndExit(err)
+			}
 		} else {
-			logger.Printf("Uploaded %s, hash=%s\n", filepath.Base(result.Path), result.RokkaHash)
+			totalUploads += 1
+			err := okReporter.Report(result)
+			if err != nil {
+				logErrorAndExit(err)
+			}
 		}
 	}
 
-	return nil
+	return struct {
+		TotalUploads  int
+		TotalFailures int
+	}{TotalFailures: totalFailures, TotalUploads: totalUploads}, nil
 }
 
-func startWorkers(options MassuploadOptions, client *rokka.Client, images chan string, results chan uploadResult) {
+func startWorkers(options massuploadOptions, client *rokka.Client, images chan string, results chan uploadResult) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
 
@@ -161,11 +195,10 @@ func startWorkers(options MassuploadOptions, client *rokka.Client, images chan s
 
 }
 
-func buildUserMetadata(options MassuploadOptions) map[string]interface{} {
+func buildUserMetadata(options massuploadOptions) map[string]interface{} {
 	// TODO: Build the user-metadata from the input options
 	return nil
 }
-
 
 func scan(root string, images chan string, recursive bool, extensions []string) error {
 	// Keep extensions sorted to use a binary search for matching
@@ -207,7 +240,6 @@ func scan(root string, images chan string, recursive bool, extensions []string) 
 				return nil
 			}
 
-			fmt.Printf("Scan publish image %s\n", path)
 			// Add the image to the list of images to be uploaded
 			images <- path
 		}
