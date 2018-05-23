@@ -9,9 +9,21 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	// TODO: "syscall"
-	// TOOD: "os/signal"
+	"sort"
+	"strings"
 )
+
+type uploadResult struct {
+	Path      string
+	RokkaHash string
+	Error     error
+}
+
+type imageDetails struct {
+	Organization string
+	Path         string
+	UserMetadata map[string]interface{}
+}
 
 type MassuploadOptions struct {
 	Organization string
@@ -108,23 +120,12 @@ func runMassUpload(client *rokka.Client, options MassuploadOptions) error {
 	logger.Printf("Starting!\n%#v\n", options)
 
 	images := make(chan string)
-	results := make(chan massupload.UploadResult)
-	quit := make(chan bool)
+	results := make(chan uploadResult)
 
-	// TODO: Handle os.Signals and send items into the quit channel!
-	// signals := make(chan os.Signal, 1)
-	// signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-	// go func() {
-	//   sig := <-signals
-	// 	 logger.Printf("Received signal %s, terminating workers", sig.String())
-	// 	 close(quit)
-	// 	 return
-	// }()
-
-	startWorkers(options, rokkaClient, images, results, quit)
+	startWorkers(options, rokkaClient, images, results)
 
 	// Scan folders and files
-	go massupload.Scan(options.BasePath, images, quit, options.Recursive, options.Extensions)
+	go scan(options.BasePath, images, options.Recursive, options.Extensions)
 
 	// Collect results and display progress
 	for result := range results {
@@ -138,7 +139,7 @@ func runMassUpload(client *rokka.Client, options MassuploadOptions) error {
 	return nil
 }
 
-func startWorkers(options MassuploadOptions, client *rokka.Client, images chan string, results chan massupload.UploadResult, quit chan bool) {
+func startWorkers(options MassuploadOptions, client *rokka.Client, images chan string, results chan uploadResult) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
 
@@ -148,7 +149,7 @@ func startWorkers(options MassuploadOptions, client *rokka.Client, images chan s
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
 			defer waitGroup.Done()
-			massupload.UploadWorker(client, images, results, quit, options.Organization, userMetadata, options.DryRun)
+			uploadWorker(client, images, results, options.Organization, userMetadata, options.DryRun)
 		}()
 	}
 
@@ -163,4 +164,100 @@ func startWorkers(options MassuploadOptions, client *rokka.Client, images chan s
 func buildUserMetadata(options MassuploadOptions) map[string]interface{} {
 	// TODO: Build the user-metadata from the input options
 	return nil
+}
+
+
+func scan(root string, images chan string, recursive bool, extensions []string) error {
+	// Keep extensions sorted to use a binary search for matching
+	sort.Strings(extensions)
+
+	defer func() {
+		close(images)
+	}()
+
+	err := filepath.Walk(massupload.Fixpath(root), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info == nil {
+			return nil
+		}
+
+		// Skip subfolders if enabled, but still scan the root directory
+		if info.IsDir() && root != path && !recursive {
+			return filepath.SkipDir
+		}
+
+		if !info.IsDir() {
+			// Exclude files without extension
+			ext := strings.TrimPrefix(filepath.Ext(path), ".")
+			if ext == "" {
+				return nil
+			}
+
+			// Exclude empty files
+			if info.Size() == 0 {
+				return nil
+			}
+
+			i := sort.SearchStrings(extensions, ext)
+			if i >= len(extensions) || extensions[i] != ext {
+				// If the current extension is not found among the allowed ones, just skip the file
+				return nil
+			}
+
+			fmt.Printf("Scan publish image %s\n", path)
+			// Add the image to the list of images to be uploaded
+			images <- path
+		}
+
+		return nil
+	})
+
+	return err
+}
+
+func uploadWorker(
+	client *rokka.Client,
+	imageFiles chan string,
+	results chan uploadResult,
+	organization string,
+	userMetadata map[string]interface{},
+	dryRun bool,
+) {
+	for path := range imageFiles {
+		result := uploadResult{
+			Path: path,
+		}
+
+		if dryRun {
+			result.RokkaHash = "DRY-RUN-HASH"
+		} else {
+			response, err := executeRokkaUpload(client, path, organization, userMetadata)
+			if err != nil {
+				result.Error = err
+			} else {
+				result.RokkaHash = response.Items[0].Hash
+			}
+		}
+
+		results <- result
+	}
+}
+
+func executeRokkaUpload(
+	client *rokka.Client,
+	image string,
+	organization string,
+	userMetadata map[string]interface{},
+) (rokka.CreateSourceImageResponse, error) {
+	file, err := os.Open(image)
+	if err != nil {
+		return rokka.CreateSourceImageResponse{}, err
+	}
+
+	defer file.Close()
+
+	return client.CreateSourceImageWithMetadata(organization, filepath.Base(image), file, userMetadata, nil)
 }

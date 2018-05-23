@@ -2,7 +2,7 @@ package massupload
 
 // fixpath returns an absolute path on the current OS, so we can open long
 // file names. See Restic file_windows.go
-func fixpath(name string) string {
+func Fixpath(name string) string {
 	abspath, err := filepath.Abs(name)
 	if err == nil {
 		// Check if \\?\UNC\ already exist
