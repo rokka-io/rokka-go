@@ -16,7 +16,9 @@ func TestCreateMembership(t *testing.T) {
 
 	c := NewClient(&Config{APIAddress: ts.URL})
 
-	err := c.CreateMembership(org, email, RoleAdmin)
+	var roles []MembershipRole
+	roles = append(roles, RoleAdmin)
+	err := c.CreateMembership(org, email, roles)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -27,10 +27,10 @@ type createUser struct {
 	Email string `json:"email"`
 }
 
-// CreateUserAndOrg creates a new organization and a user with the given email address.
+// CreateUser creates a new organization and a user with the given email address.
 //
 // See: https://rokka.io/documentation/references/users-and-memberships.html#create-a-user
-func (c *Client) CreateUserAndOrg(email, org string) (CreateUserResponse, error) {
+func (c *Client) CreateUser(email, org string) (CreateUserResponse, error) {
 	result := CreateUserResponse{}
 
 	b := new(bytes.Buffer)
@@ -65,10 +65,10 @@ func (c *Client) GetUserID() (CreateUserIDResponse, error) {
 	return result, err
 }
 
-// CreateUser creates a user with the given email address.
+// CreateUserWithoutOrg creates a user with the given email address.
 //
 // See: https://rokka.io/documentation/references/users-and-memberships.html#create-a-user
-func (c *Client) CreateUser(email string) (CreateUserResponse, error) {
+func (c *Client) CreateUserWithoutOrg(email string) (CreateUserResponse, error) {
 	result := CreateUserResponse{}
 
 	b := new(bytes.Buffer)

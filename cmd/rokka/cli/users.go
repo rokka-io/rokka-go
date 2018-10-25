@@ -7,10 +7,10 @@ import (
 
 func createUser(c *rokka.Client, args []string) (interface{}, error) {
 	if len(args) == 2 {
-		return c.CreateUserAndOrg(args[0], args[1])
+		return c.CreateUser(args[0], args[1])
 
 	}
-	return c.CreateUser(args[0])
+	return c.CreateUserWithoutOrg(args[0])
 }
 
 func getUser(c *rokka.Client, args []string) (interface{}, error) {
@@ -36,7 +36,7 @@ var usersCreateCmd = &cobra.Command{
 }
 
 var usersGetCmd = &cobra.Command{
-	Use:                   "create [email] [org] ",
+	Use:                   "get ",
 	Short:                 "Gets the UUID of the current user",
 	Aliases:               []string{"g"},
 	DisableFlagsInUseLine: true,
