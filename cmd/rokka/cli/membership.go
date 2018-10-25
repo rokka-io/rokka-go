@@ -49,11 +49,11 @@ func getRoles(rolesIn string) ([]rokka.MembershipRole, error) {
 
 	var roles []rokka.MembershipRole
 	for _, r := range splittedRoles {
-		if role, ok := membershipRole[r]; !ok {
+		role, ok := membershipRole[r]
+		if !ok {
 			return nil, fmt.Errorf(`Invalid membership role "%s"`, r)
-		} else {
-			roles = append(roles, role)
 		}
+		roles = append(roles, role)
 	}
 	return roles, nil
 }
@@ -81,7 +81,7 @@ var membershipCreateWithUserCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"cu"},
 	DisableFlagsInUseLine: true,
-	Run:                   run(createNewMembershipWithCurrentUser, "Membership and user successfully created.\nEmail\tUUID\tRoles\tApi-Key\n{{.Email}}\t{{.UserId}}\t{{range $i, $e := .Roles}}{{if $i}},{{end}}{{$e}}{{end}}\t{{.ApiKey}}\n"),
+	Run:                   run(createNewMembershipWithCurrentUser, "Membership and user successfully created.\nEmail\tUUID\tRoles\tApi-Key\n{{.Email}}\t{{.UserID}}\t{{range $i, $e := .Roles}}{{if $i}},{{end}}{{$e}}{{end}}\t{{.APIKey}}\n"),
 }
 
 var membershipListCmd = &cobra.Command{
@@ -90,7 +90,7 @@ var membershipListCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
-	Run:                   run(listMembership, "Email\tUUID\tRoles\n{{range .Items}}{{.Email}}\t{{.UserId}}\t{{range $i, $e := .Roles}}{{if $i}},{{end}}{{$e}}{{end}}\n{{end}}"),
+	Run:                   run(listMembership, "Email\tUUID\tRoles\n{{range .Items}}{{.Email}}\t{{.UserID}}\t{{range $i, $e := .Roles}}{{if $i}},{{end}}{{$e}}{{end}}\n{{end}}"),
 }
 
 var membershipListForUUIDCmd = &cobra.Command{
@@ -99,7 +99,7 @@ var membershipListForUUIDCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"g"},
 	DisableFlagsInUseLine: true,
-	Run:                   run(listMembership, "Email\tUUID\tRoles\n{{.Email}}\t{{.UserId}}\t{{range $i, $e := .Roles}}{{if $i}},{{end}}{{$e}}{{end}}\n"),
+	Run:                   run(listMembership, "Email\tUUID\tRoles\n{{.Email}}\t{{.UserID}}\t{{range $i, $e := .Roles}}{{if $i}},{{end}}{{$e}}{{end}}\n"),
 }
 
 var membershipDeleteCmd = &cobra.Command{

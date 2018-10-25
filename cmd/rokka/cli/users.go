@@ -14,7 +14,7 @@ func createUser(c *rokka.Client, args []string) (interface{}, error) {
 }
 
 func getUser(c *rokka.Client, args []string) (interface{}, error) {
-	return c.GetUserId()
+	return c.GetUserID()
 }
 
 // usersCmd represents the users command

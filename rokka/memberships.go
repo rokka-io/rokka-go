@@ -9,7 +9,7 @@ import (
 // MembershipRole is a simple alias to string for the defined constants.
 type MembershipRole string
 
-// RoleRead, RoleWrite and RoleAdmin are membership roles.
+// RoleRead, RoleWrite, RoleAdmin and RoleUpload are membership roles.
 const (
 	RoleRead   MembershipRole = "read"
 	RoleWrite  MembershipRole = "write"
@@ -21,16 +21,18 @@ type createMembershipRequest struct {
 	Roles []MembershipRole `json:"roles"`
 }
 
+// ListMembershipsResponse is a collection of multiple membership objects in Items.
 type ListMembershipsResponse struct {
 	Items []Membership `json:"items"`
 }
 
+// Membership holds all the info for a membership.
 type Membership struct {
-	OrganizationId string   `json:"organization_id"`
+	OrganizationID string   `json:"organization_id"`
 	Email          string   `json:"email"`
-	UserId         string   `json:"user_id"`
+	UserID         string   `json:"user_id"`
 	Roles          []string `json:"roles"`
-	ApiKey         string   `json:"api_key"`
+	APIKey         string   `json:"api_key"`
 }
 
 // CreateMembership creates a membership for a given UUID of the user.
@@ -52,6 +54,9 @@ func (c *Client) CreateMembership(org, userid string, roles []MembershipRole) er
 	return c.Call(req, nil, nil)
 }
 
+// CreateNewMembershipWithCurrentUser creates a new user object and automatically assign it to an organisation
+//
+// See: https://rokka.io/documentation/references/users-and-memberships.html#create-a-new-user-object-and-automatically-assign-it-to-an-organisation
 func (c *Client) CreateNewMembershipWithCurrentUser(org string, roles []MembershipRole) (Membership, error) {
 	result := Membership{}
 
@@ -71,6 +76,9 @@ func (c *Client) CreateNewMembershipWithCurrentUser(org string, roles []Membersh
 	return result, err
 }
 
+// ListMembership lists all membership of an organisation
+//
+// See: https://rokka.io/documentation/references/users-and-memberships.html#list-memberships
 func (c *Client) ListMembership(org string) (ListMembershipsResponse, error) {
 	result := ListMembershipsResponse{}
 
@@ -85,6 +93,9 @@ func (c *Client) ListMembership(org string) (ListMembershipsResponse, error) {
 	return result, err
 }
 
+// ListMembershipForUUID list the membership of an user and organisation
+//
+// See: https://rokka.io/documentation/references/users-and-memberships.html#list-memberships
 func (c *Client) ListMembershipForUUID(org string, uuid string) (Membership, error) {
 	result := Membership{}
 
@@ -99,6 +110,9 @@ func (c *Client) ListMembershipForUUID(org string, uuid string) (Membership, err
 	return result, err
 }
 
+// DeleteMembership deletes a user from an organization
+//
+// See: https://rokka.io/documentation/references/users-and-memberships.html#remove-a-user-from-an-organization
 func (c *Client) DeleteMembership(org string, uuid string) error {
 	req, err := c.NewRequest(http.MethodDelete, "/organizations/"+org+"/memberships/"+uuid, nil, nil)
 

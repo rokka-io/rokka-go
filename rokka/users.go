@@ -13,7 +13,8 @@ type CreateUserResponse struct {
 	APIKey string `json:"api_key"`
 }
 
-type CreateUserIdResponse struct {
+// CreateUserIDResponse contains information about the user id of a user
+type CreateUserIDResponse struct {
 	ID string `json:"user_id"`
 }
 
@@ -26,7 +27,7 @@ type createUser struct {
 	Email string `json:"email"`
 }
 
-// CreateUser creates a new organization and a user with the given email address.
+// CreateUserAndOrg creates a new organization and a user with the given email address.
 //
 // See: https://rokka.io/documentation/references/users-and-memberships.html#create-a-user
 func (c *Client) CreateUserAndOrg(email, org string) (CreateUserResponse, error) {
@@ -49,8 +50,11 @@ func (c *Client) CreateUserAndOrg(email, org string) (CreateUserResponse, error)
 	return result, err
 }
 
-func (c *Client) GetUserId() (CreateUserIdResponse, error) {
-	result := CreateUserIdResponse{}
+// GetUserID returns the user uuid of the logged in user
+//
+// See: https://rokka.io/documentation/references/users-and-memberships.html#get-the-current-user_id
+func (c *Client) GetUserID() (CreateUserIDResponse, error) {
+	result := CreateUserIDResponse{}
 
 	req, err := c.NewRequest(http.MethodGet, "/user", nil, nil)
 	if err != nil {
@@ -61,6 +65,9 @@ func (c *Client) GetUserId() (CreateUserIdResponse, error) {
 	return result, err
 }
 
+// CreateUser creates a user with the given email address.
+//
+// See: https://rokka.io/documentation/references/users-and-memberships.html#create-a-user
 func (c *Client) CreateUser(email string) (CreateUserResponse, error) {
 	result := CreateUserResponse{}
 
