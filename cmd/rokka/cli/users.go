@@ -7,7 +7,7 @@ import (
 
 func createUser(c *rokka.Client, args []string) (interface{}, error) {
 	if len(args) == 2 {
-		return c.CreateUser(args[0], args[1])
+		return c.CreateUser(args[1], args[0])
 
 	}
 	return c.CreateUserWithoutOrg(args[0])

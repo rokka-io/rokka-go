@@ -30,7 +30,7 @@ type createUser struct {
 // CreateUser creates a new organization and a user with the given email address.
 //
 // See: https://rokka.io/documentation/references/users-and-memberships.html#create-a-user
-func (c *Client) CreateUser(email, org string) (CreateUserResponse, error) {
+func (c *Client) CreateUser(org, email string) (CreateUserResponse, error) {
 	result := CreateUserResponse{}
 
 	b := new(bytes.Buffer)

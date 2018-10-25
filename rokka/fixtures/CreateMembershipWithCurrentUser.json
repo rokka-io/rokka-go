@@ -1,0 +1,11 @@
+{
+  "user_id": "newUserId",
+  "email": "test@example.org",
+  "roles": [
+    "admin",
+    "write"
+  ],
+  "api_key": "jPALkp8ufA8gfgNStnGuJUG2X0oIWBCD",
+  "organization_id": "f252ae5a-1ded-4ac2-a72e-969bb0d2d911",
+  "active": true
+}
