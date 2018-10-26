@@ -27,12 +27,12 @@ stages:
 
 jobs:
   include:
-    - name: "Linting with Go: 1.10"
+    - name: "Linting with Go 1.11"
       script: ./.travis/lint.sh
-      go: "1.10"
+      go: "1.11"
     - stage: deploy
       script: ./.travis/deploy.sh
-      go: "1.10"
+      go: "1.11"
       deploy:
         skip_cleanup: true
         provider: releases
