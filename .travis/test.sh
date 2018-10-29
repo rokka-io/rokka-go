@@ -2,20 +2,12 @@
 
 set -e
 
-# linting
+go get -u github.com/mattn/goveralls
+go get -u github.com/go-playground/overalls
 
 # go 1.8 doesn't exclude /vendor/ yet.
 dirs=$(go list -f {{.Dir}} ./... | grep -v /vendor/)
 pkgs=$(go list ./... | grep -v /vendor/)
-
-echo "Running goimports..."
-goimports -d $dirs
-echo "Running go tool vet..."
-go tool vet $dirs
-echo "Running golint ..."
-golint $dirs
-echo "Running megacheck ..."
-megacheck $pkgs
 
 # testing
 
