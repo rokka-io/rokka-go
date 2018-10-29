@@ -4,8 +4,6 @@
 [![Build Status](https://travis-ci.org/rokka-io/rokka-go.svg?branch=master)](https://travis-ci.org/rokka-io/rokka-go)
 [![Coverage Status](https://coveralls.io/repos/github/rokka-io/rokka-go/badge.svg?branch=master)](https://coveralls.io/github/rokka-io/rokka-go?branch=master)
 
-*This is currently work in progress*
-
 ## CLI Installation & Usage
 
 The rokka-go CLI is a single file binary, automatically built for Windows, macOS and Linux. [You can download the appropriate file on the releases page](https://github.com/rokka-io/rokka-go/releases/latest).
