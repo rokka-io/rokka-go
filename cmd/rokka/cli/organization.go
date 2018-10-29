@@ -30,7 +30,7 @@ var organizationGetCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"g"},
 	DisableFlagsInUseLine: true,
-	Run: run(getOrganization, organizationTemplate),
+	Run:                   run(getOrganization, organizationTemplate),
 }
 
 var organizationCreateCmd = &cobra.Command{
@@ -39,7 +39,7 @@ var organizationCreateCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"c"},
 	DisableFlagsInUseLine: true,
-	Run: run(createOrganization, organizationTemplate),
+	Run:                   run(createOrganization, organizationTemplate),
 }
 
 func init() {

@@ -6,7 +6,14 @@ import (
 )
 
 func createUser(c *rokka.Client, args []string) (interface{}, error) {
-	return c.CreateUser(args[0], args[1])
+	if len(args) == 2 {
+		return c.CreateUser(args[1], args[0])
+	}
+	return c.CreateUserWithoutOrg(args[0])
+}
+
+func getUser(c *rokka.Client, args []string) (interface{}, error) {
+	return c.GetUserID()
 }
 
 // usersCmd represents the users command
@@ -19,16 +26,26 @@ var usersCmd = &cobra.Command{
 }
 
 var usersCreateCmd = &cobra.Command{
-	Use:                   "create [org] [email]",
-	Short:                 "Create a new organization and a user with the given email address",
-	Args:                  cobra.ExactArgs(1),
+	Use:                   "create [email] [org] ",
+	Short:                 "Create a new  user with the given email address and optional a new organization",
+	Args:                  cobra.RangeArgs(1, 2),
 	Aliases:               []string{"c"},
 	DisableFlagsInUseLine: true,
-	Run: run(createUser, "Id:\t{{.ID}}\nEmail:\t{{.Email}}\nAPI Key:\t{{.APIKey}}\n\nAn email containing further information has been sent to you.\n"),
+	Run:                   run(createUser, "Id:\t{{.ID}}\nEmail:\t{{.Email}}\nAPI Key:\t{{.APIKey}}\n\nAn email containing further information has been sent to you.\n"),
+}
+
+var usersGetCmd = &cobra.Command{
+	Use:                   "get ",
+	Short:                 "Gets the UUID of the current user",
+	Aliases:               []string{"g"},
+	DisableFlagsInUseLine: true,
+	Run:                   run(getUser, "Id:\t{{.ID}}\n"),
 }
 
 func init() {
 	rootCmd.AddCommand(usersCmd)
 
 	usersCmd.AddCommand(usersCreateCmd)
+	usersCmd.AddCommand(usersGetCmd)
+
 }

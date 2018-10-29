@@ -11,7 +11,6 @@ go get -u golang.org/x/tools/cmd/goimports
 dirs=$(go list -f {{.Dir}} ./...)
 pkgs=$(go list ./...)
 
-
 echo "Running goimports..."
 goimports -d $dirs
 echo "Running go tool vet..."

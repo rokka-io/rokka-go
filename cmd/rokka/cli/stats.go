@@ -73,7 +73,7 @@ var statsGetCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"g"},
 	DisableFlagsInUseLine: true,
-	Run: run(getStats, "Date\tDownloaded (Bytes)\tSpace (Bytes)\tFiles\n{{range $_, $e := .}}{{date $e.Date}}\t{{ $e.Downloaded }}\t{{ $e.Space }}\t{{ $e.Files }}\n{{end}}"),
+	Run:                   run(getStats, "Date\tDownloaded (Bytes)\tSpace (Bytes)\tFiles\n{{range $_, $e := .}}{{date $e.Date}}\t{{ $e.Downloaded }}\t{{ $e.Space }}\t{{ $e.Files }}\n{{end}}"),
 }
 
 func init() {

@@ -83,10 +83,10 @@ func curl(c *rokka.Client, args []string) (interface{}, error) {
 
 // curlCmd allows to use a curl-like interface for simple requests
 var curlCmd = &cobra.Command{
-	Use:   "curl [path]",
-	Short: "cURL-like interface for doing raw requests.",
-	Run:   run(curl, "{{if .StatusLine}}{{.StatusLine}}\n{{end}}{{if .Headers}}{{range $name, $val := .Headers}}{{range $val}}{{$name}}: {{.}}\n{{end}}{{end}}\n{{end}}{{.Data}}"),
-	Args:  cobra.ExactArgs(1),
+	Use:                   "curl [path]",
+	Short:                 "cURL-like interface for doing raw requests.",
+	Run:                   run(curl, "{{if .StatusLine}}{{.StatusLine}}\n{{end}}{{if .Headers}}{{range $name, $val := .Headers}}{{range $val}}{{$name}}: {{.}}\n{{end}}{{end}}\n{{end}}{{.Data}}"),
+	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 }
 

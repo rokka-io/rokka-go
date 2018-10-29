@@ -23,7 +23,7 @@ var operationsListCmd = &cobra.Command{
 	Short:                 "Show available operations usable for stacks",
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
-	Run: run(getOperations, "Name:\tDescription:\tProperties:\n{{range $name, $config := .}}{{$name}}\t{{$config.description}}\t{{join $config.properties \", \"}}\n{{end}}"),
+	Run:                   run(getOperations, "Name:\tDescription:\tProperties:\n{{range $name, $config := .}}{{$name}}\t{{$config.description}}\t{{join $config.properties \", \"}}\n{{end}}"),
 }
 
 func init() {

@@ -23,7 +23,7 @@ var stackOptionsListCmd = &cobra.Command{
 	Short:                 "Show default stack options",
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
-	Run: run(getStackOptions, rawTemplate),
+	Run:                   run(getStackOptions, rawTemplate),
 }
 
 func init() {
