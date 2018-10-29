@@ -203,7 +203,7 @@ var sourceImagesListCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
-	Run: run(listSourceImages, "Name\tHash\tDetails\tPreview URL\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.MimeType}}, {{.Width}}x{{.Height}}\t{{previewurl .Organization .Hash .Format}}\n{{end}}\nTotal: {{.Total}}\n"),
+	Run:                   run(listSourceImages, "Name\tHash\tDetails\tPreview URL\n{{range .Items}}{{.Name}}\t{{.Hash}}\t{{.MimeType}}, {{.Width}}x{{.Height}}\t{{previewurl .Organization .Hash .Format}}\n{{end}}\nTotal: {{.Total}}\n"),
 }
 
 const sourceImageTemplate = "Hash:\t{{.Hash}} ({{.ShortHash}})\nName:\t{{.Name}}\nDetails:\t{{.MimeType}}, {{.Width}}x{{.Height}}, {{.Size}}Bytes\nCreated at:\t{{datetime .Created}}\nBinary hash:\t{{.BinaryHash}}\nPreview URL:\t{{previewurl .Organization .Hash .Format}}{{if .UserMetadata}}\nUser metadata:{{range $key, $value := .UserMetadata}}\n  {{$key}}:\t{{$value}}{{end}}{{end}}{{if .DynamicMetadata}}\nDynamic metadata:{{range $key, $value := .DynamicMetadata}}\n  {{$key}}:\t{{$value}}{{end}}{{end}}\n"
@@ -214,7 +214,7 @@ var sourceImagesGetCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"g"},
 	DisableFlagsInUseLine: true,
-	Run: run(getSourceImage, sourceImageTemplate),
+	Run:                   run(getSourceImage, sourceImageTemplate),
 }
 
 var sourceImagesDownloadCmd = &cobra.Command{
@@ -223,7 +223,7 @@ var sourceImagesDownloadCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"d"},
 	DisableFlagsInUseLine: true,
-	Run: run(downloadSourceImage, "Success downloading {{.BytesWritten}} bytes to {{.Name}}.\n"),
+	Run:                   run(downloadSourceImage, "Success downloading {{.BytesWritten}} bytes to {{.Name}}.\n"),
 }
 
 var sourceImagesDeleteCmd = &cobra.Command{
@@ -232,7 +232,7 @@ var sourceImagesDeleteCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteSourceImage, "Successfully deleted source image.\n"),
+	Run:                   run(deleteSourceImage, "Successfully deleted source image.\n"),
 }
 
 var sourceImagesRestoreCmd = &cobra.Command{
@@ -241,7 +241,7 @@ var sourceImagesRestoreCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"r"},
 	DisableFlagsInUseLine: true,
-	Run: run(restoreSourceImage, "Successfully restored source image.\n"),
+	Run:                   run(restoreSourceImage, "Successfully restored source image.\n"),
 }
 
 var sourceImagesCopyCmd = &cobra.Command{
@@ -250,7 +250,7 @@ var sourceImagesCopyCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"cp"},
 	DisableFlagsInUseLine: true,
-	Run: run(copySourceImage, "Successfully copied source image.\n"),
+	Run:                   run(copySourceImage, "Successfully copied source image.\n"),
 }
 
 var sourceImagesCopyAllCmd = &cobra.Command{
@@ -259,7 +259,7 @@ var sourceImagesCopyAllCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"cpa"},
 	DisableFlagsInUseLine: true,
-	Run: run(copyAllSourceImage, "Successfully copied {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
+	Run:                   run(copyAllSourceImage, "Successfully copied {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
 }
 
 var sourceImagesDeleteAllCmd = &cobra.Command{
@@ -268,7 +268,7 @@ var sourceImagesDeleteAllCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"del-all"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteAllSourceImage, "Successfully deleted {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
+	Run:                   run(deleteAllSourceImage, "Successfully deleted {{.SuccessfullyUploaded}} source images. Errors with {{.ErrorUploaded}} source images.\n"),
 }
 
 var sourceImagesCreateCmd = &cobra.Command{
@@ -277,7 +277,7 @@ var sourceImagesCreateCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"c"},
 	DisableFlagsInUseLine: true,
-	Run: run(createSourceImage, fmt.Sprintf("{{range .Items}}%s{{end}}", sourceImageTemplate)),
+	Run:                   run(createSourceImage, fmt.Sprintf("{{range .Items}}%s{{end}}", sourceImageTemplate)),
 }
 
 var sourceImagesDynamicMetadataCmd = &cobra.Command{
@@ -296,7 +296,7 @@ If the deletePrevious flag is supplied, the previous image will be deleted.`,
 	Args:                  cobra.ExactArgs(4),
 	Aliases:               []string{"a"},
 	DisableFlagsInUseLine: true,
-	Run: run(addDynamicMetadata, "Location: {{.Location}}\n"),
+	Run:                   run(addDynamicMetadata, "Location: {{.Location}}\n"),
 }
 
 var sourceImagesDeleteDynamicMetadataCmd = &cobra.Command{
@@ -307,7 +307,7 @@ If the deletePrevious flag is supplied, the previous image will be deleted.`,
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteDynamicMetadata, "Location: {{.Location}}\n"),
+	Run:                   run(deleteDynamicMetadata, "Location: {{.Location}}\n"),
 }
 
 var sourceImagesUserMetadataCmd = &cobra.Command{
@@ -326,7 +326,7 @@ In case the --name flag is specified, the value will be set on that specific fie
 	Args:                  cobra.ExactArgs(3),
 	Aliases:               []string{"u"},
 	DisableFlagsInUseLine: true,
-	Run: run(updateUserMetadata, sourceImageTemplate),
+	Run:                   run(updateUserMetadata, sourceImageTemplate),
 }
 
 var sourceImagesDeleteUserMetadataCmd = &cobra.Command{
@@ -337,7 +337,7 @@ In case the --name flag is specified, only that field is removed.`,
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"d"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteUserMetadata, sourceImageTemplate),
+	Run:                   run(deleteUserMetadata, sourceImageTemplate),
 }
 
 func init() {

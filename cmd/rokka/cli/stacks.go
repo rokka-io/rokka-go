@@ -283,7 +283,7 @@ var stacksCmd = &cobra.Command{
 	Short:                 "Manage stacks",
 	Aliases:               []string{"s"},
 	DisableFlagsInUseLine: true,
-	Run: nil,
+	Run:                   nil,
 }
 
 var stacksListCmd = &cobra.Command{
@@ -292,7 +292,7 @@ var stacksListCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	Aliases:               []string{"l"},
 	DisableFlagsInUseLine: true,
-	Run: run(listStacks, "Name\tOperations\n{{range .Items}}{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}\n{{end}}"),
+	Run:                   run(listStacks, "Name\tOperations\n{{range .Items}}{{.Name}}\t{{range $i, $e := .StackOperations}}{{if $i}}, {{end}}{{.Name}}{{end}}\n{{end}}"),
 }
 
 var stacksDeleteCmd = &cobra.Command{
@@ -301,7 +301,7 @@ var stacksDeleteCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"del"},
 	DisableFlagsInUseLine: true,
-	Run: run(deleteStack, "Stack successfully deleted\n"),
+	Run:                   run(deleteStack, "Stack successfully deleted\n"),
 }
 
 var stacksCreateCmd = &cobra.Command{
@@ -323,7 +323,7 @@ If the create function is executed without a pipe a manual mode allows to select
 	Args:                  cobra.ExactArgs(2),
 	Aliases:               []string{"c", "save"},
 	DisableFlagsInUseLine: true,
-	Run: run(createStack, "Stack {{.Name}} created:\n\n{{json .}}\n"),
+	Run:                   run(createStack, "Stack {{.Name}} created:\n\n{{json .}}\n"),
 }
 
 func init() {

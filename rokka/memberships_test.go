@@ -1,9 +1,10 @@
 package rokka
 
 import (
-	"github.com/rokka-io/rokka-go/test"
 	"net/http"
 	"testing"
+
+	"github.com/rokka-io/rokka-go/test"
 )
 
 func TestCreateMembership(t *testing.T) {
