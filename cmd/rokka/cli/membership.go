@@ -35,7 +35,6 @@ func createNewMembershipWithCurrentUser(c *rokka.Client, args []string) (interfa
 func listMembership(c *rokka.Client, args []string) (interface{}, error) {
 	if len(args) == 2 {
 		return c.ListMembershipForUUID(args[0], args[1])
-
 	}
 	return c.ListMembership(args[0])
 }
