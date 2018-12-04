@@ -5,7 +5,7 @@ import "net/http"
 // StackOptionsResponse contains the available stack options.
 type StackOptionsResponse struct {
 	Properties map[string]struct {
-		Type      string      `json:"type"`
+		Type      interface{} `json:"type"`
 		MinLength *int        `json:"minLength,omitempty"`
 		Values    []string    `json:"values,omitempty"`
 		Default   interface{} `json:"default,omitempty"`
