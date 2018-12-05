@@ -16,24 +16,25 @@ type Options struct {
 	Force                   bool
 }
 
-// CopyResult contains the result of the operatio
-type CopyResult struct {
-	RokkaHash string
-	Error     error
+// OperationResult contains the result of the operation
+type OperationResult struct {
+	NotOK int
+	OK    int
+	Error error
 }
 
 // CallbackFunc is run on each image of an organization
-type CallbackFunc func(client *rokka.Client, hash string, options Options) (err error)
+type CallbackFunc func(client *rokka.Client, hashes []string, options Options) OperationResult
 
 // StartWorkers starts Copy Workers
-func StartWorkers(options Options, client *rokka.Client, images chan string, results chan CopyResult, callback CallbackFunc) {
+func StartWorkers(options Options, client *rokka.Client, images chan string, results chan OperationResult, callback CallbackFunc, limit int) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(options.Concurrency)
 	// Start workers for image copy
 	for i := 0; i < options.Concurrency; i++ {
 		go func() {
 			defer waitGroup.Done()
-			copyWorker(client, images, results, options, callback)
+			hashCallbackWorker(client, images, results, options, callback, limit)
 		}()
 	}
 	// Start a go-routine to to close the result channel as soon as all workers are done
@@ -43,21 +44,31 @@ func StartWorkers(options Options, client *rokka.Client, images chan string, res
 	}()
 }
 
-func copyWorker(
+func hashCallbackWorker(
 	client *rokka.Client,
 	imageFiles chan string,
-	results chan CopyResult,
+	opresults chan OperationResult,
 	options Options,
-	callback CallbackFunc) {
+	callback CallbackFunc,
+	limit int,
+) {
+	hashes := []string{}
+	var opresult = OperationResult{}
 	for hash := range imageFiles {
-		result := CopyResult{
-			RokkaHash: hash,
+		hashes = append(hashes, hash)
+		if len(hashes) >= limit {
+			if !options.DryRun {
+				opresult = callback(client, hashes, options)
+			}
+
+			hashes = []string{}
+			opresults <- opresult
 		}
-		if !options.DryRun {
-			result.Error = callback(client, hash, options)
-		}
-		results <- result
 	}
+	if !options.DryRun {
+		opresult = callback(client, hashes, options)
+	}
+	opresults <- opresult
 }
 
 // Scan starts the scan operation for getting all images
@@ -93,11 +104,25 @@ func list(options Options, client *rokka.Client, images chan string, cursor stri
 }
 
 // ExecuteRokkaCopy copies a single image from one org to another
-func ExecuteRokkaCopy(client *rokka.Client, hash string, options Options) error {
-	return client.CopySourceImage(options.SourceOrganization, hash, options.DestinationOrganization)
+func ExecuteRokkaCopy(client *rokka.Client, hashes []string, options Options) OperationResult {
+	OK, notOK, err := client.CopySourceImages(options.SourceOrganization, hashes, options.DestinationOrganization)
+	return OperationResult{OK: OK, NotOK: notOK, Error: err}
+
 }
 
 // ExecuteRokkaDelete delete one single image from the org
-func ExecuteRokkaDelete(client *rokka.Client, hash string, options Options) error {
-	return client.DeleteSourceImage(options.SourceOrganization, hash)
+func ExecuteRokkaDelete(client *rokka.Client, hashes []string, options Options) OperationResult {
+	var lasterr error
+
+	OK := 0
+	notOK := 0
+	for _, hash := range hashes {
+		lasterr = client.DeleteSourceImage(options.SourceOrganization, hash)
+		if lasterr != nil {
+			notOK++
+		} else {
+			OK++
+		}
+	}
+	return OperationResult{OK: OK, NotOK: notOK, Error: lasterr}
 }

@@ -212,6 +212,33 @@ func (c *Client) CopySourceImage(sourceOrg, hash string, destinationOrg string) 
 	return c.Call(req, nil, nil)
 }
 
+// CreateCopySourceImagesResponse is returned when copying multiple images
+type CreateCopySourceImagesResponse struct {
+	Created  []string `json:"created"`
+	Existing []string `json:"existing"`
+	Notfound []string `json:"notfound"`
+}
+
+// CopySourceImages copies a multiple source images by hashes from one org to another
+//
+// See: https://rokka.io/documentation/references/source-images.html
+func (c *Client) CopySourceImages(sourceOrg string, hashes []string, destinationOrg string) (int, int, error) {
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(hashes)
+	if err != nil {
+		return 0, 0, err
+	}
+	req, err := c.NewRequest("POST", fmt.Sprintf("/sourceimages/%s/copy", sourceOrg), b, nil)
+	req.Header.Add("Destination", destinationOrg)
+	if err != nil {
+		return 0, 0, err
+	}
+	result := CreateCopySourceImagesResponse{}
+
+	err = c.CallJSONResponse(req, &result)
+	return len(result.Created) + len(result.Existing), len(result.Notfound), err
+}
+
 // CreateSourceImage uploads an image without user or dynamic metadata set.
 //
 // See: https://rokka.io/documentation/references/source-images.html#create-a-source-image
