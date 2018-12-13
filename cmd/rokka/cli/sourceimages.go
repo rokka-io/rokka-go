@@ -11,7 +11,7 @@ import (
 	"github.com/rokka-io/rokka-go/cmd/rokka/cli/doonall"
 	"github.com/rokka-io/rokka-go/rokka"
 	"github.com/spf13/cobra"
-	"gopkg.in/cheggaaa/pb.v1"
+	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 var (
@@ -76,21 +76,21 @@ func copySourceImage(c *rokka.Client, args []string) (interface{}, error) {
 func copyAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	doOnAllOptions.SourceOrganization = args[0]
 	doOnAllOptions.DestinationOrganization = args[1]
-	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaCopy, fmt.Sprintf("Copying of %%d source images from organization %s. to %s\n", args[0], args[1]))
+	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaCopy, fmt.Sprintf("Copying of %%d source images from organization %s. to %s\n", args[0], args[1]), 100)
 }
 
 func deleteAllSourceImage(c *rokka.Client, args []string) (interface{}, error) {
 	doOnAllOptions.SourceOrganization = args[0]
-	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaDelete, fmt.Sprintf("Deleting of %%d source images on organization %s.\n", args[0]))
+	return doOnAllSourceImage(c, doOnAllOptions, doonall.ExecuteRokkaDelete, fmt.Sprintf("Deleting of %%d source images on organization %s.\n", args[0]), 1)
 }
 
-func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doonall.CallbackFunc, tmpl string) (interface{}, error) {
+func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doonall.CallbackFunc, tmpl string, limit int) (interface{}, error) {
 	images := make(chan string)
-	results := make(chan doonall.CopyResult)
+	results := make(chan doonall.OperationResult)
 
-	doonall.StartWorkers(options, rokkaClient, images, results, updateFunc)
+	doonall.StartWorkers(options, rokkaClient, images, results, updateFunc, limit)
 
-	var counterError, counterSuccess int64 = 0, 0
+	var counterError, counterSuccess int = 0, 0
 	// get the total count for progress bar
 	listSourceImagesOptions := rokka.ListSourceImagesOptions{}
 	listSourceImagesOptions.Limit = 1
@@ -116,18 +116,15 @@ func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doo
 	go doonall.Scan(doOnAllOptions, rokkaClient, images)
 	bar.Start()
 	for result := range results {
-		if result.Error != nil {
-			counterError++
-		} else {
-			counterSuccess++
-		}
-		bar.Increment()
+		counterSuccess += result.OK
+		counterError += result.NotOK
+		bar.Set(counterError + counterSuccess)
 	}
 	bar.Finish()
 
 	return struct {
-		SuccessfullyUploaded int64
-		ErrorUploaded        int64
+		SuccessfullyUploaded int
+		ErrorUploaded        int
 	}{counterSuccess, counterError}, nil
 
 }
