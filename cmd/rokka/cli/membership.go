@@ -50,7 +50,7 @@ func getRoles(rolesIn string) ([]rokka.MembershipRole, error) {
 	for _, r := range splittedRoles {
 		role, ok := membershipRole[r]
 		if !ok {
-			return nil, fmt.Errorf(`Invalid membership role "%s"`, r)
+			return nil, fmt.Errorf(`invalid membership role "%s"`, r)
 		}
 		roles = append(roles, role)
 	}

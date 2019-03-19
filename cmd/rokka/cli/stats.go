@@ -20,11 +20,11 @@ var statsGetCmdOptions rokka.GetStatsOptions
 func getStats(c *rokka.Client, args []string) (interface{}, error) {
 	from, err := time.Parse("2006-01-02", statsGetCmdOptions.From)
 	if err != nil {
-		return nil, fmt.Errorf(`Invalid format for parameter "from". Expected YYYY-MM-DD, got "%s"`, statsGetCmdOptions.From)
+		return nil, fmt.Errorf(`invalid format for parameter "from". Expected YYYY-MM-DD, got "%s"`, statsGetCmdOptions.From)
 	}
 	to, err := time.Parse("2006-01-02", statsGetCmdOptions.To)
 	if err != nil {
-		return nil, fmt.Errorf(`Invalid format for parameter "to". Expected YYYY-MM-DD, got "%s"`, statsGetCmdOptions.To)
+		return nil, fmt.Errorf(`invalid format for parameter "to". Expected YYYY-MM-DD, got "%s"`, statsGetCmdOptions.To)
 	}
 	res, err := c.GetStats(args[0], statsGetCmdOptions)
 	if err != nil {

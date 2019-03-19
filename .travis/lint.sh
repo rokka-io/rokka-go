@@ -4,7 +4,7 @@ set -e
 
 # linting
 
-go get -u honnef.co/go/tools/cmd/megacheck
+go get -u honnef.co/go/tools/cmd/staticcheck
 go get -u golang.org/x/lint/golint
 go get -u golang.org/x/tools/cmd/goimports
 
@@ -17,5 +17,5 @@ echo "Running go tool vet..."
 go tool vet $dirs
 echo "Running golint ..."
 golint $dirs
-echo "Running megacheck ..."
-megacheck $pkgs
+echo "Running staticcheck ..."
+staticcheck -go 1.8 $pkgs
