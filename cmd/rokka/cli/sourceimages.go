@@ -22,7 +22,7 @@ var (
 	binaryHash              bool
 )
 
-var errExists = errors.New("File already exists")
+var errExists = errors.New("file already exists")
 
 func listSourceImages(c *rokka.Client, args []string) (interface{}, error) {
 	return c.ListSourceImages(args[0], sourceImagesListOptions)
@@ -102,7 +102,7 @@ func doOnAllSourceImage(c *rokka.Client, options doonall.Options, updateFunc doo
 	if !options.Force {
 		logger.Errorf("Are you sure? (yes/no): ")
 		if !askForConfirmation() {
-			return nil, errors.New("Operation cancelled")
+			return nil, errors.New("operation cancelled")
 		}
 	}
 	bar := pb.New(res.Total)

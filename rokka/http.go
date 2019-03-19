@@ -96,7 +96,7 @@ func retryAfterSeconds(retryAfter string, max float64) float64 {
 	} else {
 		retryAfterDate, err := http.ParseTime(retryAfter)
 		if err == nil {
-			delay = retryAfterDate.Sub(time.Now()).Seconds()
+			delay = time.Until(retryAfterDate).Seconds()
 		}
 	}
 

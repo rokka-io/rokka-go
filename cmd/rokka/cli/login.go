@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	errInvalidAPIKey  = errors.New("Invalid API key")
-	errAPIKeyRequired = errors.New("Missing flag --apiKey")
+	errInvalidAPIKey  = errors.New("invalid API key")
+	errAPIKeyRequired = errors.New("missing flag --apiKey")
 )
 
 func login(c *rokka.Client, args []string) (interface{}, error) {
