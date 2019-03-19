@@ -13,8 +13,8 @@ pkgs=$(go list ./...)
 
 echo "Running goimports..."
 goimports -d $dirs
-echo "Running go tool vet..."
-go tool vet $dirs
+echo "Running go vet..."
+go vet $dirs
 echo "Running golint ..."
 golint $dirs
 echo "Running staticcheck ..."

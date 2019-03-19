@@ -1,10 +1,10 @@
 ---
 language: go
+# later go versions than 1.10 are in the `jobs` spec to allow setting env variables specificly
 go:
   - 1.8
   - 1.9
   - "1.10"
-  - "1.11"
 
 before_install:
   - go get -u github.com/mitchellh/gox
@@ -18,12 +18,20 @@ stages:
 
 jobs:
   include:
-    - name: "Linting with Go 1.11"
+    - name: "Linting with Go 1.12"
       script: ./.travis/lint.sh
+      go: "1.12"
+      env: GO111MODULE=on
+    - stage: test
+      go: "1.12"
+      env: GO111MODULE=on
+    - stage: test
       go: "1.11"
+      env: GO111MODULE=on
     - stage: deploy
       script: ./.travis/deploy.sh
-      go: "1.11"
+      go: "1.12"
+      env: GO111MODULE=on
       deploy:
         skip_cleanup: true
         provider: releases
