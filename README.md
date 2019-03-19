@@ -6,7 +6,11 @@
 
 ## CLI Installation & Usage
 
-The rokka-go CLI is a single file binary, automatically built for Windows, macOS and Linux. [You can download the appropriate file on the releases page](https://github.com/rokka-io/rokka-go/releases/latest).
+Downloads:
+  - [Linux](https://gitreleases.dev/gh/rokka-io/rokka-go/latest/rokka_linux.zip)
+  - [macOS](https://gitreleases.dev/gh/rokka-io/rokka-go/latest/rokka_macos.zip)
+  - [Windows](https://gitreleases.dev/gh/rokka-io/rokka-go/latest/rokka_windows.zip)
+  
 After downloading the binary, place it in a folder [within your $PATH](https://en.wikipedia.org/wiki/PATH_(variable)) and rename it to `rokka`. Ensure the executable flag is set (e.g. on macOS and Linux execute `chmod u+x rokka`).
 
 After that you can start the CLI.
