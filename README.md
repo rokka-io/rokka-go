@@ -131,7 +131,8 @@ retryingClient.GetOrganization("example")
 
 ### Dependencies
 
-This project uses [dep](https://github.com/golang/dep). Run `dep ensure` for dependencies.
+This project uses [go modules](https://github.com/golang/go/wiki/Modules). 
+Place this project outside your `$GOPATH`. Dependencies will be downloaded automatically upon first `go run` or `go build`.
 
 ### Development
 
