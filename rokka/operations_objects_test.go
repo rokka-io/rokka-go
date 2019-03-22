@@ -85,7 +85,7 @@ var operationObjectsTests = []struct {
 	urlPath string
 }{
 	{"AlphaOperation without args", AlphaOperation{}, true, "alpha"},
-	{"AlphaOperation with valid args", AlphaOperation{StrPtr("x")}, true, "alpha-mode-x"},
+	{"AlphaOperation with valid args", AlphaOperation{Mode: StrPtr("x")}, true, "alpha-mode-x"},
 	{"AutorotateOperation without args", AutorotateOperation{}, true, "autorotate"},
 	{"AutorotateOperation with single arg", AutorotateOperation{Width: IntPtr(10)}, true, "autorotate-width-10"},
 	{"AutorotateOperation with multiple args", AutorotateOperation{Width: IntPtr(10), Height: IntPtr(20), RotationDirection: StrPtr("clockwise")}, true, "autorotate-height-20-rotation_direction-clockwise-width-10"},
