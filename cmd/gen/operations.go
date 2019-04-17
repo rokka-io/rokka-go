@@ -139,6 +139,10 @@ import (
 type Operation interface {
 	// Name returns the operation's name known by the API.
 	Name() string
+	// MarshalJSON() implements json.Marshaler 
+	MarshalJSON() ([]byte, error)
+	// UnmarshalExpressions sets the expressions for an operation
+	UnmarshalExpressions(json.RawMessage) error
 	// Validate checks if required properties are set.
 	// Otherwise it returns false with an error indicating the missing property.
 	Validate() (bool, error)
@@ -149,6 +153,7 @@ type Operation interface {
 type rawStack struct {
 	Name    string          ` + "`" + `json:"name"` + "`" + `
 	Options json.RawMessage ` + "`" + `json:"options"` + "`" + `
+	Expressions json.RawMessage ` + "`" + `json:"expressions"` + "`" + `
 }
 
 // Operations is a slice of Operation implementing json.Unmarshaler and json.Marshaler in order to create
@@ -172,20 +177,11 @@ func (o *Operations) UnmarshalJSON(data []byte) error {
 			//               has options on an operation which are not of the correct type. Should we write something to stdout? also not nice though..
 			continue
 		}
+		if err := op.UnmarshalExpressions(v.Expressions); err != nil {
+			return err
+		}
 	}
 	return nil
-}
-
-// MarshalJSON implements json.Marshaler
-func (o Operations) MarshalJSON() ([]byte, error) {
-	ops := make([]map[string]interface{}, len(o))
-	for i, v := range o {
-		ops[i] = make(map[string]interface{})
-		ops[i]["name"] = v.Name()
-		ops[i]["options"] = v
-	}
-
-	return json.Marshal(ops)
 }
 
 var errOperationNotImplemented = errors.New("Operation not implemented")
@@ -212,10 +208,47 @@ func NewOperationByName(name string) (Operation, error) {
 	{{ range .Properties -}}
 		{{ titleCamelCase .Name }} *{{ .Type }} ` + "`" + `json:"{{.Name}},omitempty"` + "`" + `
 	{{ end }}
+		Expressions struct{
+			{{ range .Properties -}}
+				{{ titleCamelCase .Name }} *string ` + "`" + `json:"{{.Name}},omitempty"` + "`" + `	
+			{{ end }}
+		} ` + "`" + `json:"expressions,omitempty"` + "`" + `
 	}
 
 	// Name implements rokka.Operation.Name
 	func (o {{ title .Name }}Operation) Name() string { return "{{ .Name }}" }
+
+	// MarshalJSON() implements rokka.Operation.MarshalJSON
+	func (o {{ title .Name }}Operation) MarshalJSON() ([]byte, error) {
+		data := make(map[string]interface{})
+		data["name"] = o.Name()
+
+		opts := make(map[string]interface{})
+		exprs := make(map[string]interface{})
+
+		{{ range .Properties -}}
+			if o.{{ titleCamelCase .Name }} != nil {
+				opts["{{ .Name }}"] = o.{{ titleCamelCase .Name }}
+			}
+			if o.Expressions.{{ titleCamelCase .Name }} != nil {
+				exprs["{{ .Name }}"] = o.Expressions.{{ titleCamelCase .Name }}
+			}
+		{{ end }}
+		
+		if len(opts) > 0 {
+			 data["options"] = opts
+		}
+		if len(exprs) > 0 {
+			data["expressions"] = exprs
+		}
+
+		return json.Marshal(data)
+	}
+
+	// UnmarshalExpressions implements rokka.Operation.UnmarshalExpressions and needs to write back to the struct
+	func (o *{{ title .Name }}Operation) UnmarshalExpressions(r json.RawMessage) error {
+		return json.Unmarshal(r, &o.Expressions)
+	}
 
 	// Validate implements rokka.Operation.Validate.
 	func (o {{ title .Name }}Operation) Validate() (bool, error) {

@@ -18,6 +18,9 @@ type Expression struct {
 	Overrides  map[string]interface{} `json:"overrides"`
 }
 
+// Variables enables specifying variables which are then reused in expressions.
+type Variables map[string]interface{}
+
 // Stack specifies the data of a stack.
 type Stack struct {
 	Organization     string       `json:"organization"`
@@ -38,6 +41,7 @@ type CreateStackRequest struct {
 	Operations  Operations   `json:"operations"`
 	Options     StackOptions `json:"options,omitempty"`
 	Expressions []Expression `json:"expressions,omitempty"`
+	Variables   Variables    `json:"variables,omitempty"`
 }
 
 // ListStacks returns the stacks for the specified organization.
