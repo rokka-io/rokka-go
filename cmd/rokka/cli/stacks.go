@@ -256,6 +256,10 @@ func createStack(c *rokka.Client, args []string) (interface{}, error) {
 			return "", err
 		}
 	}
+
+	//v, _ := req.Operations[0].MarshalJSON()
+	//fmt.Printf("%s\n", v)
+
 	return c.CreateStack(org, name, req, createStackOverwrite)
 }
 
