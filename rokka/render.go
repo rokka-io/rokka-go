@@ -21,7 +21,7 @@ func (c *Client) GetURLForStack(organization, hash, format, stack string, ops []
 	host := strings.Replace(c.config.ImageHost, "{{organization}}", organization, -1)
 
 	if len(ops) == 0 {
-		ops = append(ops, NoopOperation{})
+		ops = append(ops, &NoopOperation{})
 	}
 	opURL := make([]string, len(ops))
 	for i, o := range ops {
